@@ -1,0 +1,81 @@
+### Define environment variables (RubyMine will typically prompt you or use defaults)
+# Base URL for your running Rails development server
+@base_url = http://localhost:3000
+# A variable to store the ID of the created layout
+@layout_id = ""
+
+
+### 1. CREATE a new Layout
+# @name CreateLayout
+POST {{base_url}}/api/v1/layouts
+Content-Type: application/json
+Accept: application/json
+
+{
+  "layout": {
+    "name": "Playa Structure Test",
+    "description": "Main stage area layout draft"
+  }
+}
+
+> {%
+    // Capture the ID from the response body and store it in the layout_id variable
+    client.global.set("layout_id", response.body.id);
+%}
+
+### 2. GET (Index) - List all Layouts
+# @name ListLayouts
+GET {{base_url}}/api/v1/layouts
+Accept: application/json
+
+
+### 3. GET (Show) - Retrieve the created Layout by ID
+# Requires CreateLayout to have been run successfully first to set layout_id
+# @name GetLayoutById
+GET {{base_url}}/api/v1/layouts/{{layout_id}}
+Accept: application/json
+
+
+### 4. UPDATE (PATCH) the created Layout
+# Requires CreateLayout to have been run successfully first
+# Uses PATCH for partial update
+# @name UpdateLayoutPatch
+PATCH {{base_url}}/api/v1/layouts/{{layout_id}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "layout": {
+    "description": "Main stage area layout - UPDATED description"
+  }
+}
+
+
+### 5. UPDATE (PUT) the created Layout
+# Requires CreateLayout to have been run successfully first
+# Uses PUT (conceptually for full replacement, though our controller handles it like PATCH)
+# @name UpdateLayoutPut
+PUT {{base_url}}/api/v1/layouts/{{layout_id}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "layout": {
+    "name": "Playa Structure Test - Renamed via PUT",
+    "description": "Complete replacement via PUT"
+  }
+}
+
+
+### 6. DELETE the created Layout
+# Requires CreateLayout to have been run successfully first
+# @name DeleteLayout
+DELETE {{base_url}}/api/v1/layouts/{{layout_id}}
+Accept: application/json
+
+
+### 7. GET (Show) - Attempt to retrieve the deleted Layout
+# Should return a 404 Not Found error if DeleteLayout was successful
+# @name GetDeletedLayout
+GET {{base_url}}/api/v1/layouts/{{layout_id}}
+Accept: application/json
