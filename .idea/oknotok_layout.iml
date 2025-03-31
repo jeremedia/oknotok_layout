@@ -64,6 +64,8 @@
     <orderEntry type="library" scope="PROVIDED" name="et-orbi (v1.2.11, chruby: ruby-3.4.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="fugit (v1.11.1, chruby: ruby-3.4.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="globalid (v1.2.1, chruby: ruby-3.4.1) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="haml (v6.3.0, chruby: ruby-3.4.1) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="haml-rails (v2.1.0, chruby: ruby-3.4.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="i18n (v1.14.7, chruby: ruby-3.4.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="io-console (v0.8.0, chruby: ruby-3.4.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="irb (v1.15.1, chruby: ruby-3.4.1) [gem]" level="application" />
@@ -132,8 +134,10 @@
     <orderEntry type="library" scope="PROVIDED" name="sshkit (v1.24.0, chruby: ruby-3.4.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="stimulus-rails (v1.3.4, chruby: ruby-3.4.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="stringio (v3.1.6, chruby: ruby-3.4.1) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="temple (v0.10.3, chruby: ruby-3.4.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="thor (v1.3.2, chruby: ruby-3.4.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="thruster (v0.1.12, chruby: ruby-3.4.1) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="tilt (v2.6.0, chruby: ruby-3.4.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="timeout (v0.4.3, chruby: ruby-3.4.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="turbo-rails (v2.0.13, chruby: ruby-3.4.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="tzinfo (v2.0.6, chruby: ruby-3.4.1) [gem]" level="application" />
@@ -163,7 +167,11 @@
         <option value="channel" />
         <option value="controller" />
         <option value="erb:authentication" />
+        <option value="erb:controller" />
+        <option value="erb:mailer" />
+        <option value="erb:scaffold" />
         <option value="generator" />
+        <option value="haml:application_layout" />
         <option value="helper" />
         <option value="integration_test" />
         <option value="jbuilder" />
@@ -201,7 +209,11 @@
         <option value="channel" />
         <option value="controller" />
         <option value="erb:authentication" />
+        <option value="erb:controller" />
+        <option value="erb:mailer" />
+        <option value="erb:scaffold" />
         <option value="generator" />
+        <option value="haml:application_layout" />
         <option value="helper" />
         <option value="integration_test" />
         <option value="jbuilder" />
@@ -512,6 +524,11 @@
                 </subtasks>
               </RakeTaskImpl>
               <RakeTaskImpl description="" fullCommand="db:truncate_all" id="truncate_all" />
+            </subtasks>
+          </RakeTaskImpl>
+          <RakeTaskImpl id="haml">
+            <subtasks>
+              <RakeTaskImpl description="Convert html.erb to html.haml each file in app/views" fullCommand="haml:erb2haml" id="erb2haml" />
             </subtasks>
           </RakeTaskImpl>
           <RakeTaskImpl id="javascript">
