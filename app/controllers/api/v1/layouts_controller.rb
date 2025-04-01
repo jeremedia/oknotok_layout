@@ -10,7 +10,7 @@ class Api::V1::LayoutsController < ActionController::API
 
   # GET /api/v1/layouts/:id
   def show
-    render json: @layout # @layout is set by the before_action
+    render json: @layout, include: %w[brackets beams] # Or let the serializer handle includes by default
   end
 
   # POST /api/v1/layouts
@@ -55,7 +55,8 @@ class Api::V1::LayoutsController < ActionController::API
 
   # Only allow a list of trusted parameters through.
   def layout_params
-    params.require(:layout).permit(:name, :description)
+    params.require(:layout).permit(:name, :description, :plot_width, :plot_depth) # Add plot dimensions
+
     # Later, you might accept nested attributes for brackets/beams here if you design your API that way
   end
 end

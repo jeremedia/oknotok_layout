@@ -10,6 +10,7 @@ Rails.application.routes.draw do
 
       # ------ Alternative (and slightly cleaner) way to write the above: --------
       resources :layouts, only: [:index, :show, :create, :update, :destroy] do
+        delete :clear, on: :member
         # Nested routes that require layout_id
         resources :brackets, only: [:index, :create]
         resources :beams, only: [:index, :create]
@@ -27,5 +28,5 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Defines the root path route ("/")
-  # root "posts#index"
+  root "layout_viewer#index"
 end

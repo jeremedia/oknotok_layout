@@ -75,7 +75,8 @@ class Api::V1::BeamsController < ActionController::API
       :start_bracket_id, # ID of the bracket where the beam starts
       :end_bracket_id,   # ID of the bracket where the beam ends (can be null)
       :start_socket,     # Name of the socket used on the start bracket (e.g., '+x')
-      :end_socket        # Name of the socket used on the end bracket (can be null)
+      :end_socket,        # Name of the socket used on the end bracket (can be null)
+      :has_side_panel
     )
   end
 end

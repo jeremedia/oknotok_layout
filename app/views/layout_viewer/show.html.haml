@@ -1,2 +1,43 @@
-%h1 LayoutViewer#show
-%p Find me in app/views/layout_viewer/show.html.erb
+-# app/views/layout_viewer/show.html.haml
+
+%h1 OKNOTOK Layout Viewer
+
+%p Viewing Layout ID: #{params[:id]}
+-# Layout Metadata Controls
+#metadata-controls{style: "margin-bottom: 10px; padding: 10px; border: 1px solid #eee;"}
+  %div{style: "margin-bottom: 5px;"}
+    %label{for: "layout-name-input"} Layout Name:
+    %input{type: "text", id: "layout-name-input", style: "margin-left: 5px;"}
+  %div{style: "margin-bottom: 5px;"}
+    %label{for: "plot-width-input"} Plot Width (ft):
+    %input{type: "number", id: "plot-width-input", step: 50, min: 50, style: "margin-left: 5px; width: 60px;"}
+    %label{for: "plot-depth-input", style: "margin-left: 15px;"} Plot Depth (ft):
+    %input{type: "number", id: "plot-depth-input", step: 50, min: 50, style: "margin-left: 5px; width: 60px;"}
+  %div{style: "margin-top: 10px;"}
+    %button#btn-update-metadata Update Info
+
+-# Action Buttons & Mode Controls
+#controls-area{style: "margin-bottom: 10px;"}
+  %div{style: "display: inline-block; margin-right: 20px; border-right: 1px solid #ccc; padding-right: 15px;"}
+    %button#btn-new-layout New Layout
+    %button#btn-clear-layout Clear Current Layout
+    %button#btn-undo Undo (Ctrl+Z)
+  %div{style: "display: inline-block; margin-right: 20px;"}
+    %span Mode:
+    %button#btn-mode-view.mode-button.active View
+    %button#btn-mode-create.mode-button Create
+    %button#btn-mode-delete.mode-button Delete
+  #debug-controls{style: "display: inline-block;"}
+    %input{type: "checkbox", id: "chk-debug-cursor"}
+    %label{for: "chk-debug-cursor"} Debug Cursor
+
+
+-# Container for the Three.js canvas
+#threejs-container{style: "width: 80vw; height: 70vh; border: 1px solid black;"}
+  -# Three.js canvas will be inserted here by JavaScript
+
+
+-# Pass the Layout ID to the JavaScript using HAML's :javascript filter
+:javascript
+  // Make the layout ID available globally or scoped to your JS module
+  window.currentLayoutId = #{params[:id].to_json};

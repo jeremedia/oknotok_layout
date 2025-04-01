@@ -1,0 +1,4 @@
+.container
+  %ul
+    - @layouts.each do |layout|
+      %li=link_to layout.name, view_layout_path(layout.id)

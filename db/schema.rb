@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_31_144450) do
+ActiveRecord::Schema[8.0].define(version: 2025_04_01_000131) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -24,6 +24,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_31_144450) do
     t.string "end_socket"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "has_side_panel", default: false, null: false
     t.index ["end_bracket_id"], name: "index_beams_on_end_bracket_id"
     t.index ["layout_id"], name: "index_beams_on_layout_id"
     t.index ["start_bracket_id"], name: "index_beams_on_start_bracket_id"
@@ -45,6 +46,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_31_144450) do
     t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "plot_width", default: 50, null: false
+    t.integer "plot_depth", default: 50, null: false
   end
 
   add_foreign_key "beams", "brackets", column: "end_bracket_id"

@@ -9,6 +9,16 @@ class Api::V1::BracketsController < ActionController::API
     render json: @brackets
   end
 
+  # DELETE /api/v1/layouts/:id/clear
+  def clear
+    # Use dependent: :destroy defined in the Layout model
+    @layout.brackets.destroy_all
+    @layout.beams.destroy_all # Double ensure beams are gone if not cascaded perfectly
+    head :no_content # Respond with 204 No Content
+  rescue => e
+    render json: { error: "Failed to clear layout: #{e.message}" }, status: :internal_server_error
+  end
+
   # GET /api/v1/brackets/:id
   def show
     render json: @bracket # @bracket is set by before_action

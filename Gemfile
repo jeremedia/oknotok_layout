@@ -67,3 +67,5 @@ end
 gem "haml-rails", "~> 2.1"
 
 gem "html2haml", "~> 2.3"
+
+gem "active_model_serializers", "~> 0.10.15"

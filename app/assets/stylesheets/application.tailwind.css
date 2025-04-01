@@ -1,1 +1,22 @@
 @import "tailwindcss";
+
+body{
+    padding: 1rem;
+}
+.mode-controls-container button { padding: 5px 10px; margin-right: 5px; border: 1px solid #ccc; background-color: #eee; cursor: pointer; }
+.mode-controls-container button.active { background-color: #aaddaa; border-color: #559955; font-weight: bold; }
+#metadata-controls label { display: inline-block; min-width: 100px; }
+#controls-area button { padding: 5px 10px; margin-right: 5px; border: 1px solid #ccc; background-color: #eee; cursor: pointer; }
+#controls-area button.active { background-color: #aaddaa; border-color: #559955; font-weight: bold; }
+#debug-controls label { margin-left: 5px; user-select: none; }
+
+.ground_plane{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #afac76;
+    border: 1px solid #ccc;
+    z-index: -1;
+}
