@@ -1,0 +1,83 @@
+.container
+  %h1 OKNOTOK Layout Designer
+
+  %section.inventory-section
+    %h2 🎯 Inventory Status
+    .grid.grid-cols-1.md:grid-cols-3.gap-4
+      - @inventory_balances.each do |item|
+        .inventory-item
+          %strong= item.name
+          .mt-2.space-y-1
+            %div
+              %span.text-gray-400 On hand:
+              %span.ml-2.text-white= item.on_hand
+            %div
+              %span.text-gray-400 Reserved:
+              %span.ml-2.text-white= item.reserved
+            %div
+              %span.text-gray-400 Available:
+              %span.ml-2.font-semibold{class: item.available > 0 ? 'text-green-400' : 'text-red-400'}= item.available
+
+  %section.mt-8
+    %h2 📐 Active Layouts
+    .layouts-grid
+      - @layouts.each do |layout|
+        %article.layout-card-enhanced{ id: "layout-#{layout.id}", data: { controller: "layout-mode", mode: layout.mode } }
+          -# Card Header
+          .card-header
+            %h3.card-title
+              = link_to layout.name, layout_viewer_path(layout), class: "card-title-link"
+            .mode-badge{ class: layout.real_inventory? ? 'mode-badge-real' : 'mode-badge-concept', data: { "layout-mode-target": "badge" } }
+              %span.mode-icon= layout.real_inventory? ? "🔒" : "💡"
+              %span.mode-label= layout.real_inventory? ? "Real Inventory" : "Concept Mode"
+
+          -# Card Body
+          .card-body
+            - if layout.summary_note.present?
+              .card-description= layout.summary_note
+            - else
+              .card-description.text-muted No summary provided
+
+            -# Stats Row
+            .card-stats
+              .stat-item
+                %span.stat-label Plot Size
+                %span.stat-value #{layout.plot_width || 50}' × #{layout.plot_depth || 50}'
+              .stat-item
+                %span.stat-label Status
+                %span.stat-value= layout.status.humanize
+              .stat-item
+                %span.stat-label Updated
+                %span.stat-value= time_ago_in_words(layout.updated_at)
+
+            -# Inventory Info
+            - if layout.real_inventory?
+              - if layout.reserved_inventory_snapshot.any?
+                .inventory-panel.inventory-reserved
+                  %p.inventory-header
+                    %span.inventory-icon 📦
+                    Reserved Inventory
+                  %ul.inventory-list
+                    - layout.reserved_inventory_snapshot.each do |item_id, qty|
+                      - inventory_item = InventoryItem.find(item_id)
+                      %li.inventory-item-compact
+                        %span.item-name= inventory_item.name
+                        %span.item-qty= "×#{qty}"
+              - else
+                .inventory-panel.inventory-empty
+                  %p.inventory-notice
+                    %span.inventory-icon ✓
+                    No inventory reserved
+            - else
+              .inventory-panel.inventory-unlimited
+                %p.inventory-notice
+                  %span.inventory-icon ∞
+                  Unlimited resources
+
+          -# Card Footer / Actions
+          .card-footer
+            - if layout.real_inventory?
+              = button_to "Switch to Concept Mode", toggle_mode_layout_path(layout), method: :post, params: { mode: :unlimited }, class: "btn-card btn-card-secondary", form: { id: "toggle-form-#{layout.id}" }
+            - else
+              = button_to "Switch to Real Inventory", toggle_mode_layout_path(layout), method: :post, params: { mode: :real_inventory }, class: "btn-card btn-card-primary", form: { id: "toggle-form-#{layout.id}" }
+              = button_to "Duplicate", duplicate_layout_path(layout), method: :post, params: { mode: :real_inventory }, class: "btn-card btn-card-ghost", form: { id: "duplicate-form-#{layout.id}" }
