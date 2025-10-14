@@ -12,7 +12,20 @@
     %link{:href => "/icon.png", :rel => "icon", :type => "image/png"}/
     %link{:href => "/icon.svg", :rel => "icon", :type => "image/svg+xml"}/
     %link{:href => "/icon.png", :rel => "apple-touch-icon"}/
-    = stylesheet_link_tag :app, "data-turbo-track": "reload"
+    = stylesheet_link_tag "application", "data-turbo-track": "reload"
     = javascript_include_tag "application", "data-turbo-track": "reload", type: "module"
-  %body
+  %body{class: content_for(:body_class)}
+    - flash.each do |key, value|
+      %div{ class: "flash #{key} p-4 mb-4 rounded-lg", class: key == 'notice' ? 'bg-yellow-900 text-yellow-200 border border-yellow-600' : 'bg-red-900 text-red-200 border border-red-600' }
+        = value
+    %nav.primary-nav
+      %div
+        = link_to root_path, class: "text-yellow-500 font-bold text-xl hover:text-yellow-400 transition" do
+          OKNOTOK Layout Designer
+      .user-info
+        - if member_signed_in?
+          %span.mr-4= "Signed in as #{current_member.email}"
+          = link_to "Sign out", destroy_member_session_path, data: { turbo_method: :delete }, class: "btn-link"
+        - else
+          = link_to "Sign in", new_member_session_path, class: "btn-link"
     = yield
