@@ -1,6 +1,6 @@
 # app/controllers/api/v1/layouts_controller.rb
 class Api::V1::LayoutsController < ActionController::API
-  before_action :set_layout, only: [:show, :update, :destroy] # Add this callback
+  before_action :set_layout, only: [:show, :update, :destroy, :clear]
 
   # GET /api/v1/layouts
   def index
@@ -42,6 +42,18 @@ class Api::V1::LayoutsController < ActionController::API
       # This might happen if a before_destroy callback fails, though unlikely here
       render json: { errors: @layout.errors.full_messages }, status: :unprocessable_entity
     end
+  end
+
+  # DELETE /api/v1/layouts/:id/clear
+  # Clears all brackets and beams from the layout without deleting the layout itself
+  def clear
+    # The dependent: :destroy defined in the Layout model will cascade delete beams
+    # when brackets are destroyed
+    @layout.brackets.destroy_all
+    @layout.beams.destroy_all # Double ensure beams are gone if not cascaded perfectly
+    head :no_content # Respond with 204 No Content
+  rescue => e
+    render json: { error: "Failed to clear layout: #{e.message}" }, status: :internal_server_error
   end
 
   private
