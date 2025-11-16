@@ -6,6 +6,7 @@
 import { placeUpright, placeCrossbeam, deleteBracket, deleteBeam } from './apiClient.js';
 import { addBracketMesh, addBeamMesh, removeMesh } from './meshFactory.js';
 import { MAX_UNDO_STEPS } from './constants.js';
+import toast from './toast.js';
 
 // --- State ---
 const undoStack = [];
@@ -178,7 +179,7 @@ async function undoLastAction() {
         console.log("Undo operation completed.");
     } catch (error) {
         console.error("Error during undo operation:", error);
-        alert(`Undo failed: ${error.message}. Layout state might be inconsistent.`);
+        toast.error(`Undo failed: ${error.message}. Layout state might be inconsistent.`, 6000);
         // Consider fetching fresh data to resync on error
     }
 }

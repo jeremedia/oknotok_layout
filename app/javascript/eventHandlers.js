@@ -24,6 +24,7 @@ import {
 import {pushUndoAction, undoLastAction} from './undoManager.js';
 import {addGroundBeamAndPanelVisuals, removeGroundBeamAndPanelVisuals} from './meshFactory.js'; // Import new mesh functions
 import {updateBeamFlag} from './apiClient.js'; // Import new API function
+import toast from './toast.js'; // Import toast notifications
 
 // --- State ---
 let sceneRef, cameraRef, rendererRef, groundPlaneMeshRef, currentLayoutData, clockRef, controlsRef;
@@ -41,13 +42,13 @@ async function handleUpdateMetadata() {
     const newDepth = parseInt(depthInput.value, 10);
 
     if (isNaN(newWidth) || isNaN(newDepth) || newWidth < MIN_PLOT_DIMENSION || newDepth < MIN_PLOT_DIMENSION || newWidth % PLOT_DIMENSION_INCREMENT !== 0 || newDepth % PLOT_DIMENSION_INCREMENT !== 0) {
-        alert(`Plot dimensions must be multiples of ${PLOT_DIMENSION_INCREMENT} and at least ${MIN_PLOT_DIMENSION}.`);
+        toast.warning(`Plot dimensions must be multiples of ${PLOT_DIMENSION_INCREMENT} and at least ${MIN_PLOT_DIMENSION}.`);
         widthInput.value = currentLayoutData.plot_width || '';
         depthInput.value = currentLayoutData.plot_depth || '';
         return;
     }
     if (!newName.trim()) {
-        alert("Layout name cannot be empty.");
+        toast.warning("Layout name cannot be empty.");
         nameInput.value = currentLayoutData.name || '';
         return;
     }
@@ -60,10 +61,10 @@ async function handleUpdateMetadata() {
         currentLayoutData.plot_width = updatedLayout.plot_width;
         currentLayoutData.plot_depth = updatedLayout.plot_depth;
         renderPlotBoundary(currentLayoutData.plot_width, currentLayoutData.plot_depth, sceneRef);
-        alert("Layout info updated successfully!");
+        toast.success("Layout info updated successfully!");
     } catch (error) {
         console.error("Failed to update layout metadata:", error);
-        alert(`Error updating layout: ${error.message}`);
+        toast.error(`Error updating layout: ${error.message}`);
         nameInput.value = currentLayoutData.name || '';
         widthInput.value = currentLayoutData.plot_width || '';
         depthInput.value = currentLayoutData.plot_depth || '';
@@ -93,10 +94,10 @@ async function handleClearLayout() {
         clearSelectionState();
         // TODO: Clear undo stack
         // pushUndoAction({ type: 'clear_layout', previousData: { brackets: [...], beams: [...] } }); // For undo if needed
-        alert("Layout cleared successfully!");
+        toast.success("Layout cleared successfully!");
     } catch (error) {
         console.error("Failed to clear layout:", error);
-        alert(`Error clearing layout: ${error.message}`);
+        toast.error(`Error clearing layout: ${error.message}`);
     } finally {
         if (clearButton) clearButton.disabled = false;
     }
@@ -339,12 +340,12 @@ async function onMouseClick(event) {
                 const startBracketGroup = clickedObjectGroup;
                 const startBracketId = clickedGroupData.id;
                 if (!isSocketAvailable(startBracketId, clickedSocketName)) {
-                    alert(`Socket ${clickedSocketName} occupied.`);
+                    toast.warning(`Socket ${clickedSocketName} occupied.`);
                     return;
                 }
                 const targetPos = calculateNewBracketPosition(startBracketGroup, clickedSocketName);
                 if (!targetPos) {
-                    alert("Invalid socket direction.");
+                    toast.warning("Invalid socket direction.");
                     return;
                 }
                 const existingBracketData = findExistingBracketNear(targetPos);
@@ -354,7 +355,7 @@ async function onMouseClick(event) {
                     const endSocketName = getOppositeSocket(clickedSocketName);
                     console.log(`Connecting to existing bracket ${endBracketId}.`);
                     if (!isSocketAvailable(endBracketId, endSocketName)) {
-                        alert(`Opposite socket ${endSocketName} on bracket ${endBracketId} occupied.`);
+                        toast.warning(`Opposite socket ${endSocketName} on bracket ${endBracketId} occupied.`);
                         return;
                     }
                     try {
@@ -366,7 +367,7 @@ async function onMouseClick(event) {
                         checkForCompletedSquares(newCrossbeam);
                     } catch (error) {
                         console.error("Failed connection:", error);
-                        alert(`Error: ${error.message}`);
+                        toast.error(`Error: ${error.message}`);
                     }
                 } else {
                     console.log(`Creating new structure from socket.`);
@@ -375,7 +376,7 @@ async function onMouseClick(event) {
                     const halfW = plotW / 2;
                     const halfD = plotD / 2;
                     if (targetPos.x < -halfW || targetPos.x > halfW || targetPos.z < -halfD || targetPos.z > halfD) {
-                        alert("New bracket outside boundary.");
+                        toast.warning("New bracket outside boundary.");
                         return;
                     }
                     try {
@@ -404,7 +405,7 @@ async function onMouseClick(event) {
                         checkForCompletedSquares(newCrossbeam);
                     } catch (error) {
                         console.error("Auto-creation failed:", error);
-                        alert(`Error: ${error.message}`);
+                        toast.error(`Error: ${error.message}`);
                     }
                 }
             } else if (clickedGroupData.type === 'beam_group' && clickedGroupData.beamType === 'crossbeam' && !clickedGroupData.isPositioned) {
@@ -419,7 +420,7 @@ async function onMouseClick(event) {
                     return;
                 }
                 if (topBeamData.has_side_panel) {
-                    alert("Panel already exists for this beam.");
+                    toast.info("Panel already exists for this beam.");
                     return;
                 }
 
@@ -445,7 +446,7 @@ async function onMouseClick(event) {
                     // pushUndoAction({ type: 'add_panel', beamId: topBeamId });
                 } catch (error) {
                     console.error("Failed to add panel:", error);
-                    alert(`Error adding panel: ${error.message}`);
+                    toast.error(`Error adding panel: ${error.message}`);
                 }
 
             } else { /* Clicked bracket center or upright */
@@ -481,7 +482,7 @@ async function onMouseClick(event) {
                         });
                     } catch (error) {
                         console.error("Failed upright:", error);
-                        alert(`Error: ${error.message}`);
+                        toast.error(`Error: ${error.message}`);
                     }
                 } else {
                     console.log("Ground click outside boundary.");
@@ -632,7 +633,7 @@ async function onActionKeysDown(event) {
 
     } catch (error) {
         console.error(`Failed to delete ${objectType} ${objectId}:`, error);
-        alert(`Error deleting ${objectType}: ${error.message}`);
+        toast.error(`Error deleting ${objectType}: ${error.message}`);
     }
 } // --- End of onActionKeysDown ---
 

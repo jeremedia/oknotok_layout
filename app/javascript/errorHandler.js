@@ -5,6 +5,8 @@
 // to ensure errors are properly caught and logged.
 //
 
+import toast from './toast.js';
+
 /**
  * Wraps an async event handler function with error handling.
  * Prevents event handler errors from crashing the application.
@@ -20,7 +22,7 @@ export function wrapEventHandler(handler, handlerName = 'EventHandler') {
         } catch (error) {
             console.error(`Error in ${handlerName}:`, error);
             // Show user-friendly error message
-            alert(`An error occurred: ${error.message}. Please try again.`);
+            toast.error(`An error occurred: ${error.message}. Please try again.`);
             // You could send this to an error tracking service here
         }
     };
@@ -40,7 +42,7 @@ export function wrapSyncEventHandler(handler, handlerName = 'EventHandler') {
         } catch (error) {
             console.error(`Error in ${handlerName}:`, error);
             // Show user-friendly error message
-            alert(`An error occurred: ${error.message}. Please try again.`);
+            toast.error(`An error occurred: ${error.message}. Please try again.`);
             // You could send this to an error tracking service here
         }
     };

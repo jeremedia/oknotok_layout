@@ -8,6 +8,7 @@ import { initInteractionHandler, checkAllExistingBeamsForSquares } from './inter
 import { DEFAULT_PLOT_SIZE, CAMERA_STORAGE_KEY } from './constants.js';
 import * as THREE from "three";
 import { addGroundBeamAndPanelVisuals } from './meshFactory.js'; // Import new function
+import toast from './toast.js'; // Import toast notifications
 
 // --- Main Initialization ---
 async function main() {
@@ -59,7 +60,7 @@ async function main() {
         layoutData = await fetchLayoutData(layoutId);
     } catch (error) {
         console.error("Failed to load layout data:", error);
-        alert(`Failed to load layout: ${error.message}. The application will continue with default settings.`);
+        toast.error(`Failed to load layout: ${error.message}. The application will continue with default settings.`, 6000);
     }
 
     // --- NEW: Populate Metadata Inputs ---
@@ -130,6 +131,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         await main();
     } catch (error) {
         console.error("Fatal error initializing application:", error);
-        alert(`Failed to initialize the 3D viewer: ${error.message}. Please refresh the page or contact support.`);
+        toast.error(`Failed to initialize the 3D viewer: ${error.message}. Please refresh the page or contact support.`, 0);
     }
 });
