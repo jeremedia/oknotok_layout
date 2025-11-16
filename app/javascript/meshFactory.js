@@ -8,15 +8,21 @@ import {
     COLOR_GRID_CENTER, COLOR_GRID,
     BRACKET_CUBE_WIDTH,
     BRACKET_SOCKET_LENGTH, BRACKET_SOCKET_WIDTH,
-    CREATION_ANIMATION_DURATION, INITIAL_SCALE,
+    CREATION_ANIMATION_DURATION, INITIAL_SCALE, FINAL_SCALE,
     FOOTER_SOCKET_HEIGHT, FOOTER_SOCKET_WIDTH,
-    FOOTER_BASE_WIDTH, FOOTER_BASE_HEIGHT, COLOR_PLOT_GROUND
-
-
+    FOOTER_BASE_WIDTH, FOOTER_BASE_HEIGHT, COLOR_PLOT_GROUND,
+    BRACKET_VISUAL_SIZE,
+    SHADE_CLOTH_OPACITY,
+    SHADE_CLOTH_METALNESS,
+    SHADE_CLOTH_ROUGHNESS,
+    SHADE_CLOTH_Y_OFFSET,
+    BOUNDARY_LINE_HEIGHT,
+    BOUNDARY_BOX_HEIGHT,
+    GROUND_PLANE_VERTICES_HEIGHT
 } from './constants.js';
 import { checkForCompletedSquares}  from "./eventHandlers";
 // --- Reusable Meshes/Materials (Optional optimization) ---
-const bracketGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5); // Adjust size as needed
+const bracketGeometry = new THREE.BoxGeometry(BRACKET_VISUAL_SIZE, BRACKET_VISUAL_SIZE, BRACKET_VISUAL_SIZE);
 const bracketMaterial = new THREE.MeshStandardMaterial({ color: COLOR_BRACKET });
 const beamMaterial = new THREE.MeshStandardMaterial({ color: COLOR_BEAM });
 const footerBaseGeometry = new THREE.BoxGeometry(FOOTER_BASE_WIDTH, FOOTER_BASE_HEIGHT, FOOTER_BASE_WIDTH);
@@ -24,13 +30,13 @@ const footerSocketGeometry = new THREE.BoxGeometry(FOOTER_SOCKET_WIDTH, FOOTER_S
 // Use bracketMaterial for the footer as per the drawing
 const footerMaterial = bracketMaterial; // Reuse bracket material
 
-const shadeClothMaterial = new THREE.MeshStandardMaterial({ // Or MeshBasicMaterial if no lighting needed
+const shadeClothMaterial = new THREE.MeshStandardMaterial({
     color: 0x333333, // Dark grey/black
     side: THREE.DoubleSide, // Visible from both sides
     transparent: true,
-    opacity: 0.9,
-    metalness: 0.1, // Low metalness
-    roughness: 0.8  // High roughness
+    opacity: SHADE_CLOTH_OPACITY,
+    metalness: SHADE_CLOTH_METALNESS,
+    roughness: SHADE_CLOTH_ROUGHNESS
 });
 // NEW: Shade Cloth Geometry (use CROSSBEAM_LENGTH)
 const shadeClothGeometry = new THREE.PlaneGeometry(CROSSBEAM_LENGTH, CROSSBEAM_LENGTH);
@@ -67,7 +73,7 @@ function addBracketMesh(bracketData, scene, clock) { // Pass clock instance
         isAnimatingScale: true,
         animationStartTime: clock.getElapsedTime(), // Record start time
         animationDuration: CREATION_ANIMATION_DURATION,
-        targetScale: 1.0 // Final scale
+        targetScale: FINAL_SCALE // Final scale
     };
 
     // --- Central Cube ---
@@ -141,7 +147,7 @@ function addBeamMesh(beamData, scene, clock) {
     beamGroup.userData.isAnimatingScale = true;
     beamGroup.userData.animationStartTime = clock.getElapsedTime();
     beamGroup.userData.animationDuration = CREATION_ANIMATION_DURATION; // Assumes this constant exists
-    beamGroup.userData.targetScale = 1.0;
+    beamGroup.userData.targetScale = FINAL_SCALE;
     // const axesHelper = new THREE.AxesHelper(1);
     // beamGroup.add(axesHelper);
 
@@ -275,10 +281,10 @@ function addShadeClothMesh(bracketIds, scene, clock) { // Pass clock
         isAnimatingScale: true,
         animationStartTime: clock.getElapsedTime(),
         animationDuration: CREATION_ANIMATION_DURATION, // Use same duration for now
-        targetScale: 1.0
+        targetScale: FINAL_SCALE
     };
 
-    shadeClothMesh.position.set(center.x, averageY - 0.1, center.z);
+    shadeClothMesh.position.set(center.x, averageY - SHADE_CLOTH_Y_OFFSET, center.z);
     shadeClothMesh.rotation.x = -Math.PI / 2;
 
     // --- Set Initial Scale ---
@@ -312,24 +318,24 @@ function renderPlotBoundary(width, depth, scene) {
 
     // Draw boundary lines
     const points = [
-        new THREE.Vector3(-halfW, 0.01, -halfD), new THREE.Vector3(halfW, 0.01, -halfD),
-        new THREE.Vector3(halfW, 0.01, halfD), new THREE.Vector3(-halfW, 0.01, halfD),
-        new THREE.Vector3(-halfW, 0.01, -halfD) // Close loop
+        new THREE.Vector3(-halfW, GROUND_PLANE_VERTICES_HEIGHT, -halfD), new THREE.Vector3(halfW, GROUND_PLANE_VERTICES_HEIGHT, -halfD),
+        new THREE.Vector3(halfW, GROUND_PLANE_VERTICES_HEIGHT, halfD), new THREE.Vector3(-halfW, GROUND_PLANE_VERTICES_HEIGHT, halfD),
+        new THREE.Vector3(-halfW, GROUND_PLANE_VERTICES_HEIGHT, -halfD) // Close loop
     ];
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
     const material = new THREE.LineBasicMaterial({ color: COLOR_PLOT_BOUNDARY, linewidth: 2 });
     const boundary = new THREE.Line(geometry, material);
     boundary.name = "plotBoundary";
-    boundary.position.y = 1.03; // Slightly above ground plane
+    boundary.position.y = BOUNDARY_LINE_HEIGHT; // Slightly above ground plane
     scene.add(boundary);
     console.log(`Rendered plot boundary: ${w}x${d}`);
 
     // Draw boundary box (optional)
-    const boxGeometry = new THREE.BoxGeometry(w, 0.01, d);
+    const boxGeometry = new THREE.BoxGeometry(w, BOUNDARY_BOX_HEIGHT, d);
     const boxMaterial = new THREE.MeshBasicMaterial({ color: COLOR_PLOT_GROUND, side: THREE.DoubleSide });
     const boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
     boxMesh.name = "plotBoundaryBox";
-    boxMesh.position.set(0, 0.01, 0); // Centered
+    boxMesh.position.set(0, BOUNDARY_BOX_HEIGHT, 0); // Centered
     scene.add(boxMesh);
 }
 

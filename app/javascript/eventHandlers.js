@@ -11,7 +11,16 @@ import {
     clearLayoutContents
 } from './apiClient.js';
 import {addBracketMesh, addBeamMesh, removeMesh, renderPlotBoundary, addShadeClothMesh} from './meshFactory.js';
-import {CROSSBEAM_LENGTH, UPRIGHT_HEIGHT, DEFAULT_PLOT_SIZE, CAMERA_STORAGE_KEY} from './constants.js'; // Assuming CAMERA_STORAGE_KEY is defined here or elsewhere
+import {
+    CROSSBEAM_LENGTH,
+    UPRIGHT_HEIGHT,
+    DEFAULT_PLOT_SIZE,
+    CAMERA_STORAGE_KEY,
+    MIN_PLOT_DIMENSION,
+    PLOT_DIMENSION_INCREMENT,
+    POSITION_TOLERANCE,
+    LENGTH_TOLERANCE
+} from './constants.js';
 import {pushUndoAction, undoLastAction} from './undoManager.js';
 import {addGroundBeamAndPanelVisuals, removeGroundBeamAndPanelVisuals} from './meshFactory.js'; // Import new mesh functions
 import {updateBeamFlag} from './apiClient.js'; // Import new API function
@@ -31,8 +40,8 @@ async function handleUpdateMetadata() {
     const newWidth = parseInt(widthInput.value, 10);
     const newDepth = parseInt(depthInput.value, 10);
 
-    if (isNaN(newWidth) || isNaN(newDepth) || newWidth < 50 || newDepth < 50 || newWidth % 50 !== 0 || newDepth % 50 !== 0) {
-        alert("Plot dimensions must be multiples of 50 and at least 50.");
+    if (isNaN(newWidth) || isNaN(newDepth) || newWidth < MIN_PLOT_DIMENSION || newDepth < MIN_PLOT_DIMENSION || newWidth % PLOT_DIMENSION_INCREMENT !== 0 || newDepth % PLOT_DIMENSION_INCREMENT !== 0) {
+        alert(`Plot dimensions must be multiples of ${PLOT_DIMENSION_INCREMENT} and at least ${MIN_PLOT_DIMENSION}.`);
         widthInput.value = currentLayoutData.plot_width || '';
         depthInput.value = currentLayoutData.plot_depth || '';
         return;
@@ -150,7 +159,7 @@ function calculateNewBracketPosition(startBracketGroup, socketName) {
     return startPos.add(offset);
 }
 
-function findExistingBracketNear(targetPosition, tolerance = 0.1) {
+function findExistingBracketNear(targetPosition, tolerance = POSITION_TOLERANCE) {
     if (!currentLayoutData || !currentLayoutData.brackets) return null;
     for (const bracket of currentLayoutData.brackets) {
         const distance = targetPosition.distanceTo(new THREE.Vector3(bracket.x, bracket.y, bracket.z));
@@ -198,8 +207,8 @@ function checkForCompletedSquares(triggerBeamData) {
     }
 
     // Tolerance values for floating-point comparisons
-    const tolerance = 0.1; // Position tolerance (feet) - accounts for floating-point imprecision
-    const lengthTolerance = 0.5; // Length tolerance (feet) - allows for minor construction variances
+    const tolerance = POSITION_TOLERANCE; // Position tolerance (feet) - accounts for floating-point imprecision
+    const lengthTolerance = LENGTH_TOLERANCE; // Length tolerance (feet) - allows for minor construction variances
     const targetLength = CROSSBEAM_LENGTH; // 12 feet - target side length
     // Pre-compute squared bounds to avoid sqrt() in tight loop
     const targetLengthSqMin = Math.pow(targetLength - lengthTolerance, 2);

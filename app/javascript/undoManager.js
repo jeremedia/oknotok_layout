@@ -5,10 +5,10 @@
 // These will be passed during initialization.
 import { placeUpright, placeCrossbeam, deleteBracket, deleteBeam } from './apiClient.js';
 import { addBracketMesh, addBeamMesh, removeMesh } from './meshFactory.js';
+import { MAX_UNDO_STEPS } from './constants.js';
 
 // --- State ---
 const undoStack = [];
-const MAX_UNDO_STEPS = 50; // Limit history size
 let sceneRef, currentLayoutDataRef, clockRef; // References to shared objects
 
 // --- Initialization ---

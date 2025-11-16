@@ -1,6 +1,11 @@
 // app/javascript/debugCursor.js
 import * as THREE from 'three';
-import { DEBUG_LINE_LENGTH } from './constants.js';
+import {
+    DEBUG_LINE_LENGTH,
+    DEBUG_CURSOR_HEIGHT,
+    DEBUG_CURSOR_OPACITY,
+    DEBUG_CURSOR_RENDER_ORDER
+} from './constants.js';
 
 let isDebugCursorActive = false;
 let debugCursorLines = null;
@@ -11,7 +16,7 @@ const debugLineMaterial = new THREE.LineBasicMaterial({
     linewidth: 1,
     depthTest: false,
     transparent: true,
-    opacity: 0.7
+    opacity: DEBUG_CURSOR_OPACITY
 });
 
 function createDebugCursorLines() {
@@ -31,7 +36,7 @@ function createDebugCursorLines() {
     debugCursorLines.add(lineV);
     debugCursorLines.name = "debugCursor";
     debugCursorLines.visible = false;
-    debugCursorLines.renderOrder = 999;
+    debugCursorLines.renderOrder = DEBUG_CURSOR_RENDER_ORDER;
     sceneRef.add(debugCursorLines);
     console.log("Debug cursor created.");
 }
@@ -52,7 +57,7 @@ function updateDebugCursorPosition(event) {
 
     if (intersects.length > 0) {
         const intersectionPoint = intersects[0].point;
-        debugCursorLines.position.set(intersectionPoint.x, 0.02, intersectionPoint.z);
+        debugCursorLines.position.set(intersectionPoint.x, DEBUG_CURSOR_HEIGHT, intersectionPoint.z);
         debugCursorLines.visible = true;
     } else {
         debugCursorLines.visible = false;
@@ -63,7 +68,7 @@ function toggleDebugCursor(isActive) {
     isDebugCursorActive = isActive;
     if (debugCursorLines) {
         debugCursorLines.visible = isDebugCursorActive;
-        if (!isActive) debugCursorLines.position.set(0, 0.02, 0);
+        if (!isActive) debugCursorLines.position.set(0, DEBUG_CURSOR_HEIGHT, 0);
     }
     console.log(`Debug cursor active: ${isDebugCursorActive}`);
 }

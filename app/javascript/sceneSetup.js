@@ -2,7 +2,19 @@
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { COLOR_BACKGROUND, INITIAL_SCALE } from './constants.js';
+import {
+    COLOR_BACKGROUND,
+    INITIAL_SCALE,
+    FINAL_SCALE,
+    CAMERA_FOV,
+    CAMERA_NEAR_CLIP,
+    CAMERA_FAR_CLIP,
+    CAMERA_START_X,
+    CAMERA_START_Y,
+    CAMERA_START_Z,
+    AMBIENT_LIGHT_INTENSITY,
+    DIRECTIONAL_LIGHT_INTENSITY
+} from './constants.js';
 
 let scene, camera, renderer, controls, groundPlaneMesh;
 const clock = new THREE.Clock(); // Instantiate clock globally or near animate
@@ -14,12 +26,12 @@ function setupScene(container) {
 
     // 2. Camera
     camera = new THREE.PerspectiveCamera(
-        75, // Field of View (degrees)
+        CAMERA_FOV, // Field of View (degrees)
         container.clientWidth / container.clientHeight, // Aspect Ratio
-        0.1, // Near clipping plane
-        2000 // Far clipping plane (increased)
+        CAMERA_NEAR_CLIP, // Near clipping plane
+        CAMERA_FAR_CLIP // Far clipping plane (increased)
     );
-    camera.position.set(15, 15, 25); // Start position
+    camera.position.set(CAMERA_START_X, CAMERA_START_Y, CAMERA_START_Z); // Start position
 
     // 3. Renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -27,9 +39,9 @@ function setupScene(container) {
     container.appendChild(renderer.domElement); // Add canvas to the container div
 
     // 4. Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // Soft white light
+    const ambientLight = new THREE.AmbientLight(0xffffff, AMBIENT_LIGHT_INTENSITY); // Soft white light
     scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, DIRECTIONAL_LIGHT_INTENSITY);
     directionalLight.position.set(50, 100, 75); // Adjust light position
     directionalLight.castShadow = false; // Optional: shadows add performance cost
     scene.add(directionalLight);
@@ -97,7 +109,7 @@ function animate() {
                 child.scale.set(currentScale, currentScale, currentScale);
 
                 // Check completion
-                if (progress >= 1.0) {
+                if (progress >= FINAL_SCALE) {
                     child.scale.set(targetScale, targetScale, targetScale); // Ensure final scale
                     child.userData.isAnimatingScale = false;
                 }
