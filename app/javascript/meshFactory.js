@@ -21,14 +21,28 @@ import {
     GROUND_PLANE_VERTICES_HEIGHT
 } from './constants.js';
 import { checkForCompletedSquares}  from "./eventHandlers";
-// --- Reusable Meshes/Materials (Optional optimization) ---
+
+// --- Reusable Meshes/Materials (Shared Resources - DO NOT DISPOSE) ---
+// These are reused across many objects for performance. They are marked as shared
+// to prevent disposal during mesh removal, which would cause errors.
+
 const bracketGeometry = new THREE.BoxGeometry(BRACKET_VISUAL_SIZE, BRACKET_VISUAL_SIZE, BRACKET_VISUAL_SIZE);
+bracketGeometry.userData.isShared = true; // Mark as shared - don't dispose
+
 const bracketMaterial = new THREE.MeshStandardMaterial({ color: COLOR_BRACKET });
+bracketMaterial.userData.isShared = true; // Mark as shared - don't dispose
+
 const beamMaterial = new THREE.MeshStandardMaterial({ color: COLOR_BEAM });
+beamMaterial.userData.isShared = true; // Mark as shared - don't dispose
+
 const footerBaseGeometry = new THREE.BoxGeometry(FOOTER_BASE_WIDTH, FOOTER_BASE_HEIGHT, FOOTER_BASE_WIDTH);
+footerBaseGeometry.userData.isShared = true; // Mark as shared - don't dispose
+
 const footerSocketGeometry = new THREE.BoxGeometry(FOOTER_SOCKET_WIDTH, FOOTER_SOCKET_HEIGHT, FOOTER_SOCKET_WIDTH);
+footerSocketGeometry.userData.isShared = true; // Mark as shared - don't dispose
+
 // Use bracketMaterial for the footer as per the drawing
-const footerMaterial = bracketMaterial; // Reuse bracket material
+const footerMaterial = bracketMaterial; // Reuse bracket material (already marked as shared)
 
 const shadeClothMaterial = new THREE.MeshStandardMaterial({
     color: 0x333333, // Dark grey/black
@@ -38,8 +52,11 @@ const shadeClothMaterial = new THREE.MeshStandardMaterial({
     metalness: SHADE_CLOTH_METALNESS,
     roughness: SHADE_CLOTH_ROUGHNESS
 });
+shadeClothMaterial.userData.isShared = true; // Mark as shared - don't dispose
+
 // NEW: Shade Cloth Geometry (use CROSSBEAM_LENGTH)
 const shadeClothGeometry = new THREE.PlaneGeometry(CROSSBEAM_LENGTH, CROSSBEAM_LENGTH);
+shadeClothGeometry.userData.isShared = true; // Mark as shared - don't dispose
 
 
 // --- Mesh Creation Functions ---
@@ -48,12 +65,14 @@ const socketGeometry = new THREE.BoxGeometry(
     BRACKET_SOCKET_WIDTH,  // Height (Y) - Sockets are square
     BRACKET_SOCKET_LENGTH  // Length (Z) - Along the socket's axis
 );
+socketGeometry.userData.isShared = true; // Mark as shared - don't dispose
 
 const centralCubeGeometry = new THREE.BoxGeometry(
     BRACKET_CUBE_WIDTH,
     BRACKET_CUBE_WIDTH,
     BRACKET_CUBE_WIDTH
 );
+centralCubeGeometry.userData.isShared = true; // Mark as shared - don't dispose
 
 
 function addBracketMesh(bracketData, scene, clock) { // Pass clock instance
@@ -343,8 +362,43 @@ function renderPlotBoundary(width, depth, scene) {
 // app/javascript/meshFactory.js
 // ... (keep existing constants and functions: addBracketMesh, addBeamMesh, etc.) ...
 
+/**
+ * Properly disposes of Three.js geometry and material to prevent memory leaks.
+ * IMPORTANT: Only disposes if the material/geometry is NOT shared (reused).
+ *
+ * @param {THREE.BufferGeometry} geometry - Geometry to dispose
+ * @param {THREE.Material|Array<THREE.Material>} material - Material(s) to dispose
+ */
+function disposeGeometryAndMaterial(geometry, material) {
+    // Dispose geometry if it's unique (not a shared reference)
+    // We mark shared geometries with a special flag
+    if (geometry && !geometry.userData.isShared) {
+        geometry.dispose();
+    }
+
+    // Dispose material(s) if unique
+    if (material) {
+        if (Array.isArray(material)) {
+            material.forEach(mat => {
+                if (!mat.userData.isShared) {
+                    mat.dispose();
+                }
+            });
+        } else if (!material.userData.isShared) {
+            material.dispose();
+        }
+    }
+}
+
 // --- Mesh Removal ---
-function removeMesh(objectToRemove, scene) { // Can be Group or Mesh
+/**
+ * Removes a mesh or group from the scene and properly disposes of resources.
+ * Prevents memory leaks by cleaning up geometries, materials, and references.
+ *
+ * @param {THREE.Object3D} objectToRemove - Group or Mesh to remove
+ * @param {THREE.Scene} scene - The Three.js scene
+ */
+function removeMesh(objectToRemove, scene) {
     if (!objectToRemove || !scene) return;
 
     console.log(`Removing object: ${objectToRemove.name}`);
@@ -353,32 +407,40 @@ function removeMesh(objectToRemove, scene) { // Can be Group or Mesh
     if (objectToRemove.isGroup) {
         objectToRemove.traverse((child) => {
             if (child.isMesh) {
-                if (child.geometry) child.geometry.dispose();
-                if (child.material) {
-                    if (Array.isArray(child.material)) {
-                        child.material.forEach(material => material.dispose());
-                    } else {
-                        child.material.dispose();
-                    }
+                disposeGeometryAndMaterial(child.geometry, child.material);
+
+                // Clear texture references if any
+                if (child.material && child.material.map) {
+                    child.material.map.dispose();
                 }
             }
+
+            // Clear userData to prevent retained references
+            child.userData = {};
         });
-    } else if (objectToRemove.isMesh) { // If it's a single mesh (less likely now)
-        if (objectToRemove.geometry) objectToRemove.geometry.dispose();
-        if (objectToRemove.material) {
-            if (Array.isArray(objectToRemove.material)) {
-                objectToRemove.material.forEach(material => material.dispose());
-            } else {
-                objectToRemove.material.dispose();
-            }
+    } else if (objectToRemove.isMesh) {
+        // Single mesh disposal
+        disposeGeometryAndMaterial(objectToRemove.geometry, objectToRemove.material);
+
+        // Clear texture references if any
+        if (objectToRemove.material && objectToRemove.material.map) {
+            objectToRemove.material.map.dispose();
         }
     }
 
     // Remove the main object (group or mesh) from the scene
     scene.remove(objectToRemove);
-    objectToRemove.parent = null; // Break link
-    // Optional: Clear userData
+
+    // Break parent link to help garbage collection
+    objectToRemove.parent = null;
+
+    // Clear userData to prevent retained references
     objectToRemove.userData = {};
+
+    // Recursively clear children to break all references
+    while (objectToRemove.children.length > 0) {
+        objectToRemove.remove(objectToRemove.children[0]);
+    }
 }
 
 // NEW function for panel visuals
