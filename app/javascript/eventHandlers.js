@@ -25,6 +25,7 @@ import {pushUndoAction, undoLastAction} from './undoManager.js';
 import {addGroundBeamAndPanelVisuals, removeGroundBeamAndPanelVisuals} from './meshFactory.js'; // Import new mesh functions
 import {updateBeamFlag} from './apiClient.js'; // Import new API function
 import toast from './toast.js'; // Import toast notifications
+import { showButtonLoading } from './loadingIndicator.js'; // Import loading indicators
 
 // --- State ---
 let sceneRef, cameraRef, rendererRef, groundPlaneMeshRef, currentLayoutData, clockRef, controlsRef;
@@ -54,7 +55,7 @@ async function handleUpdateMetadata() {
     }
     const metadata = {name: newName, plot_width: newWidth, plot_depth: newDepth};
     const updateButton = document.getElementById('btn-update-metadata');
-    if (updateButton) updateButton.disabled = true;
+    const hideLoading = showButtonLoading(updateButton, 'Updating...');
     try {
         const updatedLayout = await updateLayoutMetadata(currentLayoutData.id, metadata);
         currentLayoutData.name = updatedLayout.name;
@@ -69,7 +70,7 @@ async function handleUpdateMetadata() {
         widthInput.value = currentLayoutData.plot_width || '';
         depthInput.value = currentLayoutData.plot_depth || '';
     } finally {
-        if (updateButton) updateButton.disabled = false;
+        hideLoading();
     }
 }
 
@@ -77,7 +78,7 @@ async function handleClearLayout() {
     if (!currentLayoutData) return;
     if (!window.confirm("Are you sure you want to remove ALL brackets and beams from this layout? This cannot be undone easily.")) return;
     const clearButton = document.getElementById('btn-clear-layout');
-    if (clearButton) clearButton.disabled = true;
+    const hideLoading = showButtonLoading(clearButton, 'Clearing...');
     try {
         await clearLayoutContents(currentLayoutData.id);
         currentLayoutData.brackets = [];
@@ -99,7 +100,7 @@ async function handleClearLayout() {
         console.error("Failed to clear layout:", error);
         toast.error(`Error clearing layout: ${error.message}`);
     } finally {
-        if (clearButton) clearButton.disabled = false;
+        hideLoading();
     }
 }
 
