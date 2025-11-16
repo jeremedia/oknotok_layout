@@ -1,32 +1,38 @@
 Rails.application.routes.draw do
-  get "layout_viewer/show"
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
-  get "layouts/:id/view", to: "layout_viewer#show", as: "view_layout" # Added this line
-
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
-  namespace :api do
-    namespace :v1 do
-
-      # ------ Alternative (and slightly cleaner) way to write the above: --------
-      resources :layouts, only: [:index, :show, :create, :update, :destroy] do
-        delete :clear, on: :member
-        # Nested routes that require layout_id
-        resources :brackets, only: [:index, :create]
-        resources :beams, only: [:index, :create]
-      end
-      # Shallow routes that only require the resource's own ID
-      resources :brackets, only: [:show, :update, :destroy]
-      resources :beams, only: [:show, :update, :destroy]
-      # ---------------------------------------------------------------------------
-
+  devise_for :members
+  resources :layouts, only: [:index, :show, :create, :update] do
+    member do
+      post :toggle_mode
+      post :duplicate
     end
   end
 
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+  resources :layout_viewer, only: [:index, :show], path: 'designer'
 
-  # Defines the root path route ("/")
-  root "layout_viewer#index"
+  namespace :admin do
+    resources :members, only: [:index, :update]
+    resources :invitations, only: [:create]
+    resources :inventory_items, only: [:index, :update] do
+      resources :adjustments, only: [:create], module: :inventory_items
+    end
+  end
+
+  namespace :api do
+    namespace :v1 do
+      resources :layouts do
+        member do
+          post :toggle_mode
+          post :duplicate
+          delete :clear
+        end
+        resources :brackets, only: [:index, :create]
+        resources :beams, only: [:index, :create]
+      end
+
+      resources :brackets, only: [:show, :update, :destroy]
+      resources :beams, only: [:show, :update, :destroy]
+    end
+  end
+
+  root "layouts#index"
 end
