@@ -449,8 +449,23 @@ function addGroundBeamAndPanelVisuals(topBeamGroup, scene, clock, squareBracketP
 
 
     // --- 4. Compute the ground beam position ---
-    // For a 12-ft panel with an 8-ft vertical difference, the horizontal offset is ~8.92 ft.
-    const horizontalOffset = 8.92;
+    // GEOMETRY EXPLANATION:
+    // We have a right triangle formed by:
+    // - Hypotenuse: The 12-ft panel (CROSSBEAM_LENGTH)
+    // - Vertical leg: The 8-ft height difference (topPos.y - groundPos.y = 8 - 0)
+    // - Horizontal leg: The distance we need to calculate
+    //
+    // Using Pythagorean theorem: a² + b² = c²
+    // horizontal² + 8² = 12²
+    // horizontal² = 144 - 64 = 80
+    // horizontal = √80 ≈ 8.944 ft
+    //
+    // We use 8.92 as an approximation for performance (avoiding Math.sqrt in production)
+    const PANEL_VERTICAL_DROP = 8; // feet (upright height)
+    const PANEL_DIAGONAL_LENGTH = 12; // feet (crossbeam length, panel hypotenuse)
+    const horizontalOffset = Math.sqrt(
+        Math.pow(PANEL_DIAGONAL_LENGTH, 2) - Math.pow(PANEL_VERTICAL_DROP, 2)
+    ); // ≈ 8.944 ft
     const groundPos = topPos.clone().add(outwardDir.clone().multiplyScalar(horizontalOffset));
     groundPos.y = 0; // Ground beam sits at y = 0.
     console.log("Ground beam position:", groundPos);
@@ -520,18 +535,29 @@ function addGroundBeamAndPanelVisuals(topBeamGroup, scene, clock, squareBracketP
     console.log("Panel center:", panelCenter);
 
     // --- 8. Define the Panel's Local Coordinate System ---
-    // localY: from ground beam to top beam (the slope direction).
+    // COORDINATE SYSTEM EXPLANATION:
+    // We need to orient the panel correctly in 3D space. The panel should:
+    // 1. Slope from ground to top beam
+    // 2. Face away from the roof center
+    // 3. Be perpendicular to the plane formed by the slope
+    //
+    // We create an orthonormal basis (localX, localY, localZ) using Gram-Schmidt process:
+
+    // localY: Primary axis - defines the slope direction (ground → top)
     const localY = new THREE.Vector3().subVectors(topPos, groundPos).normalize();
     console.log("Panel local Y (slope direction):", localY);
 
-    // localX: Use the vector from the roof center to the top beam,
-    // then project it onto the plane perpendicular to localY.
+    // localX: Secondary axis - panel width direction, perpendicular to slope
+    // Start with vector pointing from roof center to top beam (outward direction)
     const candidateX = topPos.clone().sub(roofCenter).normalize();
+    // Project candidateX onto plane perpendicular to localY (Gram-Schmidt orthogonalization)
+    // Formula: v_perp = v - (v · u)u where u is the unit vector to project onto
     const dot = candidateX.dot(localY);
     const localX = candidateX.sub(localY.clone().multiplyScalar(dot)).normalize();
     console.log("Panel local X:", localX);
 
-    // localZ: the panel's normal.
+    // localZ: Tertiary axis - panel normal (points perpendicular to panel surface)
+    // Computed as cross product to ensure right-handed coordinate system
     const localZ = new THREE.Vector3().crossVectors(localX, localY).normalize();
     console.log("Panel local Z (normal):", localZ);
 

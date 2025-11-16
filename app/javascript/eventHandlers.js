@@ -162,10 +162,34 @@ function findExistingBracketNear(targetPosition, tolerance = 0.1) {
     return null;
 }
 
-// Inside app/javascript/eventHandlers.js
-
-// Inside app/javascript/eventHandlers.js
-
+/**
+ * Detects completed squares formed by crossbeam connections.
+ *
+ * ALGORITHM EXPLANATION:
+ * This function checks if adding a new crossbeam completes a square structure.
+ * A valid square consists of:
+ * - 4 brackets at the same height (Y coordinate within tolerance)
+ * - 4 crossbeams connecting them in a closed loop
+ * - All side lengths approximately equal to CROSSBEAM_LENGTH (12 ft)
+ *
+ * SEARCH STRATEGY:
+ * Given trigger beam A-B, we search for two additional brackets C and D such that:
+ * 1. There exists beam A-D (from bracket A)
+ * 2. There exists beam B-C (from bracket B)
+ * 3. There exists beam C-D (completing the square)
+ * 4. All distances are within tolerance of CROSSBEAM_LENGTH
+ *
+ * This creates the pattern:  A --- B
+ *                            |     |
+ *                            D --- C
+ *
+ * PERFORMANCE NOTE:
+ * We use distanceToSquared() instead of distance() to avoid expensive sqrt() calls.
+ * We only compute sqrt() for debugging/logging.
+ *
+ * @param {Object} triggerBeamData - The beam that was just added, potentially completing a square
+ * @returns {Array<THREE.Vector3>|undefined} - Array of 4 bracket positions if square found, undefined otherwise
+ */
 function checkForCompletedSquares(triggerBeamData) {
     console.log(`Checking for squares triggered by beam: ${triggerBeamData?.id}`);
     if (!currentLayoutData || !currentLayoutData.brackets || !currentLayoutData.beams || triggerBeamData.beam_type !== 'crossbeam') {
@@ -173,9 +197,11 @@ function checkForCompletedSquares(triggerBeamData) {
         return;
     }
 
-    const tolerance = 0.1; // Position tolerance
-    const lengthTolerance = 0.5; // Length tolerance (feet) - adjust if needed
-    const targetLength = CROSSBEAM_LENGTH; // Use constant
+    // Tolerance values for floating-point comparisons
+    const tolerance = 0.1; // Position tolerance (feet) - accounts for floating-point imprecision
+    const lengthTolerance = 0.5; // Length tolerance (feet) - allows for minor construction variances
+    const targetLength = CROSSBEAM_LENGTH; // 12 feet - target side length
+    // Pre-compute squared bounds to avoid sqrt() in tight loop
     const targetLengthSqMin = Math.pow(targetLength - lengthTolerance, 2);
     const targetLengthSqMax = Math.pow(targetLength + lengthTolerance, 2);
 
