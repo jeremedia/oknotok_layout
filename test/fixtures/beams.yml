@@ -1,19 +1,11 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-
-one:
-  layout: one
-  beam_type: MyString
-  length: 1
-  start_bracket: one
-  end_bracket: one
-  start_socket: MyString
-  end_socket: MyString
-
-two:
-  layout: two
-  beam_type: MyString
-  length: 1
-  start_bracket: two
-  end_bracket: two
-  start_socket: MyString
-  end_socket: MyString
+real_inventory_beam:
+  layout: real_inventory_layout
+  beam_type: RidgeBeam
+  length: 10
+  start_bracket: real_inventory_anchor
+  end_bracket: real_inventory_corner
+  start_socket: north
+  end_socket: south
+  has_side_panel: false
+  created_at: 2025-10-01 00:00:00
+  updated_at: 2025-10-01 00:00:00

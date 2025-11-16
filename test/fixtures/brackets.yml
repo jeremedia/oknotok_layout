@@ -1,15 +1,17 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+real_inventory_anchor:
+  layout: real_inventory_layout
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  type: Bracket
+  created_at: 2025-10-01 00:00:00
+  updated_at: 2025-10-01 00:00:00
 
-one:
-  layout: one
-  x: 1.5
-  'y': 1.5
-  z: 1.5
-  type: 
-
-two:
-  layout: two
-  x: 1.5
-  'y': 1.5
-  z: 1.5
-  type: 
+real_inventory_corner:
+  layout: real_inventory_layout
+  x: 10.0
+  y: 0.0
+  z: 0.0
+  type: Bracket
+  created_at: 2025-10-01 00:00:00
+  updated_at: 2025-10-01 00:00:00

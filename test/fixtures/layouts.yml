@@ -1,9 +1,59 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+real_inventory_layout:
+  name: Camp A Frame
+  mode: real_inventory
+  status: draft
+  owner: designer
+  last_saved_by: designer
+  summary_note: Initial framing plan
+  reserved_inventory_snapshot: {}
+  metadata: {}
+  created_at: 2025-10-01 00:00:00
+  updated_at: 2025-10-01 00:00:00
 
-one:
-  name: MyString
-  description: MyText
+unlimited_layout:
+  name: Concept Pavilion
+  mode: unlimited
+  status: draft
+  owner: designer
+  last_saved_by: designer
+  summary_note: Free-form concept
+  reserved_inventory_snapshot: {}
+  metadata: {}
+  created_at: 2025-10-02 00:00:00
+  updated_at: 2025-10-02 00:00:00
 
-two:
-  name: MyString
-  description: MyText
+concept_review_layout:
+  name: Concept Review Deck
+  mode: unlimited
+  status: draft
+  owner: designer
+  last_saved_by: designer
+  summary_note: Needs admin sign-off
+  reserved_inventory_snapshot: {}
+  metadata: {}
+  created_at: 2025-10-05 00:00:00
+  updated_at: 2025-10-05 00:00:00
+
+auto_reserve_layout:
+  name: Auto Reserve Test
+  mode: real_inventory
+  status: draft
+  owner: designer
+  last_saved_by: designer
+  summary_note:
+  reserved_inventory_snapshot: {}
+  metadata: {}
+  created_at: 2025-10-03 00:00:00
+  updated_at: 2025-10-03 00:00:00
+
+overcommitted_layout:
+  name: Overcommitted Test
+  mode: real_inventory
+  status: draft
+  owner: designer
+  last_saved_by: designer
+  summary_note:
+  reserved_inventory_snapshot: {}
+  metadata: {}
+  created_at: 2025-10-03 01:00:00
+  updated_at: 2025-10-03 01:00:00

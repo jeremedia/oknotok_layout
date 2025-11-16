@@ -1,0 +1,76 @@
+real_inventory_brackets:
+  layout: real_inventory_layout
+  component_type: steel_bracket
+  variant: BRKT-STD
+  quantity: 10
+  position_data: {}
+  notes:
+  inventory_item: steel_brackets
+  created_at: 2025-10-01 00:00:00
+  updated_at: 2025-10-01 00:00:00
+
+real_inventory_lumber:
+  layout: real_inventory_layout
+  component_type: beam_4x4
+  variant: LMB-4X4-8
+  quantity: 20
+  position_data: {}
+  notes:
+  inventory_item: lumber_4x4
+  created_at: 2025-10-01 00:00:00
+  updated_at: 2025-10-01 00:00:00
+
+unlimited_brackets:
+  layout: unlimited_layout
+  component_type: steel_bracket
+  variant: BRKT-STD
+  quantity: 100
+  position_data: {}
+  notes: conceptual allocation
+  inventory_item:
+  created_at: 2025-10-02 00:00:00
+  updated_at: 2025-10-02 00:00:00
+
+concept_review_brackets:
+  layout: concept_review_layout
+  component_type: steel_bracket
+  variant: BRKT-STD
+  quantity: 12
+  position_data: {}
+  notes: pending review
+  inventory_item:
+  created_at: 2025-10-05 00:00:00
+  updated_at: 2025-10-05 00:00:00
+
+auto_reserve_brackets:
+  layout: auto_reserve_layout
+  component_type: steel_bracket
+  variant: BRKT-STD
+  quantity: 5
+  position_data: {}
+  notes:
+  inventory_item: steel_brackets
+  created_at: 2025-10-03 00:00:00
+  updated_at: 2025-10-03 00:00:00
+
+auto_reserve_lumber:
+  layout: auto_reserve_layout
+  component_type: beam_4x4
+  variant: LMB-4X4-8
+  quantity: 10
+  position_data: {}
+  notes:
+  inventory_item: lumber_4x4
+  created_at: 2025-10-03 00:00:00
+  updated_at: 2025-10-03 00:00:00
+
+overcommitted_brackets:
+  layout: overcommitted_layout
+  component_type: steel_bracket
+  variant: BRKT-STD
+  quantity: 45
+  position_data: {}
+  notes:
+  inventory_item: steel_brackets
+  created_at: 2025-10-03 01:00:00
+  updated_at: 2025-10-03 01:00:00

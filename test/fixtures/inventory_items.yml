@@ -1,0 +1,26 @@
+steel_brackets:
+  name: Standard Steel Bracket
+  category: bracket
+  sku: BRKT-STD
+  on_hand: 40
+  reserved: 0
+  notes:
+  active: true
+
+lumber_4x4:
+  name: 4x4 Lumber (8ft)
+  category: lumber_4x4
+  sku: LMB-4X4-8
+  on_hand: 60
+  reserved: 0
+  notes:
+  active: true
+
+lumber_6x6:
+  name: 6x6 Lumber (12ft)
+  category: lumber_6x6
+  sku: LMB-6X6-12
+  on_hand: 24
+  reserved: 0
+  notes:
+  active: true

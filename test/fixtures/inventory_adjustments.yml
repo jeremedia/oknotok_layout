@@ -1,0 +1,12 @@
+initial_delivery:
+  inventory_item: steel_brackets
+  admin: admin
+  change: 10
+  reason: Restock shipment
+  applied_at: 2025-10-03 12:00:00
+adjustment_decrease:
+  inventory_item: lumber_4x4
+  admin: admin
+  change: -5
+  reason: Damaged stock removal
+  applied_at: 2025-10-04 09:30:00

@@ -1,0 +1,24 @@
+<% password_digest = Devise::Encryptor.digest(Member, "password123") %>
+
+admin:
+  name: Camp Admin
+  email: admin@example.com
+  role: admin
+  status: active
+  encrypted_password: <%= password_digest %>
+
+designer:
+  name: Designer One
+  email: designer@example.com
+  role: member
+  status: active
+  invited_by: admin
+  encrypted_password: <%= password_digest %>
+
+inactive_member:
+  name: Sunset Designer
+  email: sunset@example.com
+  role: member
+  status: inactive
+  invited_by: admin
+  encrypted_password: <%= password_digest %>
