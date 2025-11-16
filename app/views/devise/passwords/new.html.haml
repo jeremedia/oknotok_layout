@@ -1,0 +1,13 @@
+- content_for :title, "Reset Password"
+
+= render "devise/shared/auth_layout", title: "Forgot your password?", subtitle: "Enter your email and we’ll send reset instructions.", icon: "PW" do
+  = render "devise/shared/form_errors", resource: resource
+  = form_with scope: resource_name, url: password_path(resource_name), method: :post, class: "space-y-6", data: { turbo: false } do |f|
+    .space-y-4
+      .space-y-2
+        = f.label :email, class: "block text-sm font-medium text-slate-300"
+        = f.email_field :email, autofocus: true, autocomplete: "email", class: "w-full rounded-xl border border-slate-700 bg-slate-950/70 text-slate-100 placeholder-slate-500 px-4 py-3 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/40 transition"
+    = f.submit "Send reset instructions", class: "w-full inline-flex justify-center items-center gap-2 rounded-xl bg-emerald-400 text-emerald-950 font-semibold py-3 hover:bg-emerald-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-300 focus:ring-offset-slate-950 transition"
+  - content_for :footer do
+    %p
+      = link_to "Back to sign in", new_session_path(resource_name), class: "text-emerald-300 hover:text-emerald-200 font-medium"

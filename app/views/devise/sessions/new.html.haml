@@ -1,0 +1,23 @@
+- content_for :title, "Sign In"
+
+= render "devise/shared/auth_layout", title: "Welcome back", subtitle: "Sign in to continue planning your OKNOTOK layouts.", icon: "OK" do
+  = render "devise/shared/form_errors", resource: resource
+  = form_with scope: resource_name, url: session_path(resource_name), class: "space-y-6", data: { turbo: false } do |f|
+    .space-y-4
+      .space-y-2
+        = f.label :email, class: "block text-sm font-medium text-slate-300"
+        = f.email_field :email, autofocus: true, autocomplete: "email", class: "w-full rounded-xl border border-slate-700 bg-slate-950/70 text-slate-100 placeholder-slate-500 px-4 py-3 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/40 transition"
+      .space-y-2
+        .flex.items-center.justify-between
+          = f.label :password, class: "block text-sm font-medium text-slate-300"
+          - if devise_mapping.recoverable?
+            = link_to "Forgot?", new_password_path(resource_name), class: "text-sm text-emerald-300 hover:text-emerald-200 font-medium"
+        = f.password_field :password, autocomplete: "current-password", class: "w-full rounded-xl border border-slate-700 bg-slate-950/70 text-slate-100 placeholder-slate-500 px-4 py-3 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/40 transition"
+      - if devise_mapping.rememberable?
+        .flex.items-center.gap-2
+          = f.check_box :remember_me, class: "rounded border-slate-600 bg-slate-900 text-emerald-400 focus:ring-emerald-400"
+          = f.label :remember_me, class: "text-sm text-slate-300"
+    = f.submit "Log in", class: "w-full inline-flex justify-center items-center gap-2 rounded-xl bg-emerald-400 text-emerald-950 font-semibold py-3 hover:bg-emerald-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-300 focus:ring-offset-slate-950 transition"
+  - content_for :footer do
+    - links = capture { render "devise/shared/links" }
+    = links if links.present?

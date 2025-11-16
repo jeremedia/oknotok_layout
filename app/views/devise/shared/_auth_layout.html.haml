@@ -1,0 +1,14 @@
+.min-h-screen.bg-slate-950.flex.items-center.justify-center.py-16.px-6
+  .max-w-md.w-full
+    %div{ class: "text-center mb-10 space-y-3" }
+      - emblem = local_assigns.fetch(:icon, "OK")
+      %div{ class: "inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-400/10 text-emerald-300" }
+        %span.font-semibold.text-lg= emblem
+      %h1.text-3xl.font-semibold.text-white= title
+      - if defined?(subtitle) && subtitle.present?
+        %p.text-slate-400= subtitle
+    %div{ class: "bg-slate-900/70 backdrop-blur rounded-2xl border border-slate-800 shadow-2xl p-8" }
+      = yield
+    - if content_for?(:footer)
+      %div{ class: "mt-6 text-center text-sm text-slate-400" }
+        = content_for(:footer)
