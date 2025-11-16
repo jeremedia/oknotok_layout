@@ -1,0 +1,29 @@
+%h1= @layout.name
+
+%p
+  %strong Mode:
+  = @layout.real_inventory? ? "Real Inventory" : "Concept Mode"
+
+%p
+  %strong Summary:
+  = @layout.summary_note.presence || "No summary provided"
+
+- if @layout.real_inventory?
+  %section
+    %h2 Reserved Inventory
+    %ul
+      - @layout.reserved_inventory_snapshot.each do |item_id, qty|
+        - inventory_item = InventoryItem.find(item_id)
+        %li
+          %strong= inventory_item.name
+          = ": #{qty} reserved of #{inventory_item.on_hand}"
+- else
+  %p Conceptual layout (does not consume inventory)
+
+%section.mt-6
+  %h2 Components
+  %ul
+    - @layout.layout_components.each do |component|
+      %li
+        %strong= component.variant
+        = " (#{component.component_type.humanize}) x#{component.quantity}"
