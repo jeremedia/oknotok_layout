@@ -14,7 +14,14 @@ async function main() {
     const container = document.getElementById('threejs-container');
     const layoutId = window.currentLayoutId;
 
-    if (!layoutId || !container) { /* ... error handling ... */ return; }
+    if (!layoutId) {
+        console.error("No layout ID provided. Cannot initialize 3D view.");
+        return;
+    }
+    if (!container) {
+        console.error("Container element 'threejs-container' not found.");
+        return;
+    }
     console.log(`Initializing 3D view for Layout ID: ${layoutId}`);
 
     // --- Instantiate Clock ---
@@ -50,7 +57,10 @@ async function main() {
     let layoutData = null;
     try {
         layoutData = await fetchLayoutData(layoutId);
-    } catch (error) { /* ... error handling ... */ }
+    } catch (error) {
+        console.error("Failed to load layout data:", error);
+        alert(`Failed to load layout: ${error.message}. The application will continue with default settings.`);
+    }
 
     // --- NEW: Populate Metadata Inputs ---
     if (layoutData) {
@@ -103,5 +113,23 @@ async function main() {
     console.log("OKNOTOK Layout Viewer Initialized.");
 }
 
+// --- Global Error Handler ---
+window.addEventListener('error', (event) => {
+    console.error('Uncaught error:', event.error);
+    // You could send this to an error tracking service here
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+    console.error('Unhandled promise rejection:', event.reason);
+    // You could send this to an error tracking service here
+});
+
 // --- Run Main Function ---
-document.addEventListener('DOMContentLoaded', main);
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await main();
+    } catch (error) {
+        console.error("Fatal error initializing application:", error);
+        alert(`Failed to initialize the 3D viewer: ${error.message}. Please refresh the page or contact support.`);
+    }
+});
