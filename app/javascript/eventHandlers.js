@@ -21,7 +21,7 @@ import {
     POSITION_TOLERANCE,
     LENGTH_TOLERANCE
 } from './constants.js';
-import {pushUndoAction, undoLastAction} from './undoManager.js';
+import {pushUndoAction, undoLastAction, redoLastAction} from './undoManager.js';
 import {addGroundBeamAndPanelVisuals, removeGroundBeamAndPanelVisuals} from './meshFactory.js'; // Import new mesh functions
 import {updateBeamFlag} from './apiClient.js'; // Import new API function
 import toast from './toast.js'; // Import toast notifications
@@ -501,6 +501,13 @@ async function onMouseClick(event) {
 
 // --- Keyboard Handler ---
 async function onActionKeysDown(event) {
+    // --- Redo ---
+    if ((event.ctrlKey || event.metaKey) && (event.key === 'y' || (event.shiftKey && event.key === 'z'))) {
+        event.preventDefault();
+        console.log("Redo triggered.");
+        await redoLastAction();
+        return;
+    }
     // --- Undo ---
     if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
         event.preventDefault();

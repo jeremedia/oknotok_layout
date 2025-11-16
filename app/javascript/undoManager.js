@@ -10,6 +10,7 @@ import toast from './toast.js';
 
 // --- State ---
 const undoStack = [];
+const redoStack = [];
 let sceneRef, currentLayoutDataRef, clockRef; // References to shared objects
 
 // --- Initialization ---
@@ -31,8 +32,10 @@ function pushUndoAction(action) {
     if (undoStack.length > MAX_UNDO_STEPS) {
         undoStack.shift(); // Remove the oldest action
     }
+    // Clear redo stack when new action is performed
+    redoStack.length = 0;
     console.log("Action pushed to undo stack:", action.type, action);
-    // TODO: Update UI to enable Undo button
+    updateUndoRedoButtons();
 }
 
 // --- Undo Logic ---
@@ -177,6 +180,9 @@ async function undoLastAction() {
                 console.warn("Unknown action type in undo stack:", actionToUndo.type);
         }
         console.log("Undo operation completed.");
+        // Push undone action to redo stack
+        redoStack.push(actionToUndo);
+        updateUndoRedoButtons();
     } catch (error) {
         console.error("Error during undo operation:", error);
         toast.error(`Undo failed: ${error.message}. Layout state might be inconsistent.`, 6000);
@@ -184,4 +190,153 @@ async function undoLastAction() {
     }
 }
 
-export { initUndoManager, pushUndoAction, undoLastAction };
+// --- Redo Logic ---
+async function redoLastAction() {
+    if (redoStack.length === 0) {
+        console.log("Redo stack empty.");
+        return;
+    }
+
+    const actionToRedo = redoStack.pop();
+    console.log("Redoing action:", actionToRedo.type, actionToRedo);
+
+    try {
+        switch (actionToRedo.type) {
+            case 'create_upright':
+                // Redo: Recreate the upright at the same position
+                if (actionToRedo.created?.position) {
+                    const { newBracket, newBeam } = await placeUpright(
+                        currentLayoutDataRef.id,
+                        actionToRedo.created.position.x,
+                        actionToRedo.created.position.z
+                    );
+                    // Update client data and add meshes
+                    if (!currentLayoutDataRef.brackets) currentLayoutDataRef.brackets = [];
+                    if (!currentLayoutDataRef.beams) currentLayoutDataRef.beams = [];
+                    currentLayoutDataRef.brackets.push(newBracket);
+                    currentLayoutDataRef.beams.push(newBeam);
+                    addBracketMesh(newBracket, sceneRef, clockRef);
+                    addBeamMesh(newBeam, sceneRef, clockRef);
+                    // Push to undo stack with new IDs
+                    undoStack.push({
+                        type: 'create_upright',
+                        created: { bracketId: newBracket.id, beamId: newBeam.id, position: actionToRedo.created.position }
+                    });
+                }
+                break;
+
+            case 'create_crossbeam':
+                // Redo: Recreate the crossbeam between the same brackets
+                if (actionToRedo.created) {
+                    const { newBeam } = await placeCrossbeam(
+                        currentLayoutDataRef.id,
+                        { id: actionToRedo.created.startBracketId },
+                        { id: actionToRedo.created.endBracketId },
+                        actionToRedo.created.startSocket,
+                        actionToRedo.created.endSocket
+                    );
+                    // Update client data and add mesh
+                    if (!currentLayoutDataRef.beams) currentLayoutDataRef.beams = [];
+                    currentLayoutDataRef.beams.push(newBeam);
+                    addBeamMesh(newBeam, sceneRef, clockRef);
+                    // Push to undo stack with new ID
+                    undoStack.push({
+                        type: 'create_crossbeam',
+                        created: {
+                            beamId: newBeam.id,
+                            startBracketId: actionToRedo.created.startBracketId,
+                            endBracketId: actionToRedo.created.endBracketId,
+                            startSocket: actionToRedo.created.startSocket,
+                            endSocket: actionToRedo.created.endSocket
+                        }
+                    });
+                }
+                break;
+
+            case 'create_structure_from_socket':
+                // Redo: Recreate the entire structure
+                if (actionToRedo.created) {
+                    // First create the new bracket/upright
+                    const { newBracket, newBeam: newUpright } = await placeUpright(
+                        currentLayoutDataRef.id,
+                        actionToRedo.created.position.x,
+                        actionToRedo.created.position.z
+                    );
+                    // Then create the crossbeam
+                    const { newBeam: newCrossbeam } = await placeCrossbeam(
+                        currentLayoutDataRef.id,
+                        { id: actionToRedo.created.startBracketId },
+                        { id: newBracket.id },
+                        actionToRedo.created.startSocket,
+                        actionToRedo.created.endSocket
+                    );
+                    // Update client data and add meshes
+                    if (!currentLayoutDataRef.brackets) currentLayoutDataRef.brackets = [];
+                    if (!currentLayoutDataRef.beams) currentLayoutDataRef.beams = [];
+                    currentLayoutDataRef.brackets.push(newBracket);
+                    currentLayoutDataRef.beams.push(newUpright);
+                    currentLayoutDataRef.beams.push(newCrossbeam);
+                    addBracketMesh(newBracket, sceneRef, clockRef);
+                    addBeamMesh(newUpright, sceneRef, clockRef);
+                    addBeamMesh(newCrossbeam, sceneRef, clockRef);
+                    // Push to undo stack with new IDs
+                    undoStack.push({
+                        type: 'create_structure_from_socket',
+                        created: {
+                            newBracketId: newBracket.id,
+                            uprightBeamId: newUpright.id,
+                            crossbeamId: newCrossbeam.id,
+                            startBracketId: actionToRedo.created.startBracketId,
+                            startSocket: actionToRedo.created.startSocket,
+                            endSocket: actionToRedo.created.endSocket,
+                            position: actionToRedo.created.position
+                        }
+                    });
+                }
+                break;
+
+            case 'delete_beam':
+            case 'delete_upright':
+            case 'delete_bracket_with_cascade':
+                // Redo deletion: Delete the recreated items
+                if (actionToRedo.type === 'delete_beam' && actionToRedo.deleted?.beamData) {
+                    // Find and delete the recreated beam
+                    const beamToDelete = currentLayoutDataRef.beams.find(b =>
+                        b.start_bracket_id === actionToRedo.deleted.beamData.start_bracket_id &&
+                        b.end_bracket_id === actionToRedo.deleted.beamData.end_bracket_id
+                    );
+                    if (beamToDelete) {
+                        await deleteBeam(beamToDelete.id);
+                        const beamGroup = sceneRef.getObjectByName(`beam_group_${beamToDelete.id}`);
+                        if (beamGroup) removeMesh(beamGroup, sceneRef);
+                        undoStack.push({ type: 'delete_beam', deleted: { beamData: actionToRedo.deleted.beamData } });
+                    }
+                }
+                // Similar logic for other delete types - simplified for now
+                break;
+
+            default:
+                console.warn("Unknown action type in redo stack:", actionToRedo.type);
+        }
+        console.log("Redo operation completed.");
+        updateUndoRedoButtons();
+    } catch (error) {
+        console.error("Error during redo operation:", error);
+        toast.error(`Redo failed: ${error.message}. Layout state might be inconsistent.`, 6000);
+    }
+}
+
+// --- UI Update Helper ---
+function updateUndoRedoButtons() {
+    const undoButton = document.getElementById('btn-undo');
+    const redoButton = document.getElementById('btn-redo');
+
+    if (undoButton) {
+        undoButton.disabled = undoStack.length === 0;
+    }
+    if (redoButton) {
+        redoButton.disabled = redoStack.length === 0;
+    }
+}
+
+export { initUndoManager, pushUndoAction, undoLastAction, redoLastAction };

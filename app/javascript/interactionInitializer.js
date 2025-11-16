@@ -4,7 +4,7 @@
 import { initModeManager } from './modeManager.js';
 import * as selectionManager from './selectionManager.js';
 import { initDebugCursor } from './debugCursor.js';
-import { initUndoManager, undoLastAction } from './undoManager.js'; // Import undo manager
+import { initUndoManager, undoLastAction, redoLastAction } from './undoManager.js'; // Import undo/redo manager
 import {
     onMouseClick,
     onActionKeysDown, // Use renamed handler
@@ -51,6 +51,7 @@ function initInteractionHandler(scene, camera, renderer, groundPlane, layoutData
     document.getElementById('btn-clear-layout')?.addEventListener('click', handleClearLayout);
     document.getElementById('btn-new-layout')?.addEventListener('click', handleNewLayout);
     document.getElementById('btn-undo')?.addEventListener('click', undoLastAction); // Attach undo handler
+    document.getElementById('btn-redo')?.addEventListener('click', redoLastAction); // Attach redo handler
     // --- End NEW ---
 
 
