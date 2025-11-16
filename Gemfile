@@ -1,13 +1,12 @@
 source "https://rubygems.org"
 
-# Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 8.0.2"
+gem "rails"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem "propshaft"
 # Use postgresql as the database for Active Record
-gem "pg", "~> 1.1"
+gem "pg"
 # Use the Puma web server [https://github.com/puma/puma]
-gem "puma", ">= 5.0"
+gem "puma"
 # Bundle and transpile JavaScript [https://github.com/rails/jsbundling-rails]
 gem "jsbundling-rails"
 # Hotwire's SPA-like page accelerator [https://turbo.hotwired.dev]
@@ -64,8 +63,8 @@ group :test do
   gem "selenium-webdriver"
 end
 
-gem "haml-rails", "~> 2.1"
-
-gem "html2haml", "~> 2.3"
-
-gem "active_model_serializers", "~> 0.10.15"
+gem "haml-rails"
+gem "html2haml"
+gem "active_model_serializers"
+gem "devise"
+gem "erb"
