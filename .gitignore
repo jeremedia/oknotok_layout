@@ -42,6 +42,7 @@
 .DS_Store
 
 # Ignore development tool directories
-/.claude
+/.claude/*
+!/.claude/settings.json
 /.codex
 /.specify
