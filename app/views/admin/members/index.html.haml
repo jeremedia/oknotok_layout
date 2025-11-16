@@ -1,0 +1,38 @@
+%h1 Member Administration
+
+%nav
+  = link_to "Inventory", admin_inventory_items_path
+
+%section.mt-6
+  %h2 Invite Member
+  = form_with url: admin_invitations_path, scope: :member, local: true do |form|
+    .field
+      = form.label :email
+      = form.email_field :email, required: true
+    .field
+      = form.label :name
+      = form.text_field :name, required: true
+    = form.submit "Send Invitation"
+
+%section.mt-6
+  %h2 Current Members
+  %table
+    %thead
+      %tr
+        %th Name
+        %th Email
+        %th Role
+        %th Status
+        %th Actions
+    %tbody
+      - @members.each do |member|
+        %tr
+          %td= member.name
+          %td= member.email
+          %td= member.role.titleize
+          %td= member.status.titleize
+          %td
+            - if member.active?
+              = button_to "Deactivate", admin_member_path(member), method: :patch, params: { member: { status: :inactive } }, class: "btn btn-small"
+            - else
+              = button_to "Activate", admin_member_path(member), method: :patch, params: { member: { status: :active } }, class: "btn btn-small"

@@ -1,0 +1,42 @@
+%h1 Inventory Dashboard
+
+%nav
+  = link_to "Invite Member", admin_members_path
+
+%section.mt-6
+  %h2 Inventory Items
+  - @inventory_items.each do |item|
+    %article.inventory-card
+      %h3= item.name
+      %p
+        %strong On Hand:
+        = item.on_hand
+      %p
+        %strong Reserved:
+        = item.reserved
+      = form_with url: admin_inventory_item_adjustments_path(item), scope: :inventory_adjustment, local: true do |form|
+        .field
+          = form.label :change, "Change"
+          = form.number_field :change, step: 1, required: true
+        .field
+          = form.label :reason, "Reason"
+          = form.text_field :reason, required: true
+        = form.submit "Record Adjustment", class: "btn btn-small"
+      %details.mt-3
+        %summary Adjustment History
+        %ul
+          - item.inventory_adjustments.order(applied_at: :desc).each do |adjustment|
+            %li
+              = "#{adjustment.applied_at.to_date}: #{adjustment.change} (#{adjustment.reason}) by #{adjustment.admin.name}"
+
+%section.mt-6
+  %h2 Quick Update
+  - @inventory_items.each do |item|
+    = form_with model: item, url: admin_inventory_item_path(item), method: :patch, local: true do |form|
+      %fieldset
+        %legend= "Update #{item.name}"
+        .field
+          = form.label :on_hand
+          = form.number_field :on_hand, min: 0
+        .actions
+          = form.submit "Save"
