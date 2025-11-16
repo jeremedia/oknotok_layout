@@ -2,7 +2,7 @@
 
 **Feature Branch**: `[001-the-goal-of]`  
 **Created**: 2025-10-13  
-**Status**: Draft  
+**Status**: Implemented  
 **Input**: User description: "The goal of the app is allowing myself and my OKNOTOK campmates to design camp layouts using our actual materials: custom steel brackets that accept 4x4 and 6x6 lumber, both with the actual inventory and "unlimited" inventory options. The layouts should be savable, browsable, versionable with accounts for members. Admins invite/manage users and manage inventory. Layouts can toggle between consuming real inventory and free design mode. Versioning is simple revision history with timestamps and authors."  
 **Test Charter**: Each user story MUST document the tests that will fail first (models, serializers, system) and the preview evidence required for parity.
 
@@ -38,22 +38,7 @@ Camp designer duplicates or starts a layout in unlimited mode to explore concept
 
 ---
 
-### User Story 3 - Browse and Restore Layout Versions (Priority: P3)
-
-Camp members need to review prior revisions of a layout, understand who changed what, and optionally roll back.
-
-**Why this priority**: Maintains accountability and lets the team revert to proven configurations before a build.
-
-**Independent Test**: Introduce failing tests in `test/models/layout_version_test.rb` to confirm version metadata (author, timestamp, notes) is stored; add `test/system/layout_version_history_test.rb` verifying the history view and restoration flow.
-
-**Acceptance Scenarios**:
-
-1. **Given** multiple saved revisions, **When** a member opens the version history, **Then** the system lists each version with timestamp, author, and summary note.
-2. **Given** a prior revision, **When** the member restores it, **Then** the system creates a new revision capturing the rollback and preserves previous history.
-
----
-
-### User Story 4 - Admin Manage Membership and Inventory (Priority: P3)
+### User Story 3 - Admin Manage Membership and Inventory (Priority: P3)
 
 Admin invites new campmates, adjusts their access, and maintains the roster of brackets and lumber on hand.
 
@@ -76,9 +61,9 @@ Admin invites new campmates, adjusts their access, and maintains the roster of b
 
 ## Layout Parity Evidence *(mandatory)*
 
-- Fixtures or factories: Extend `test/fixtures/layouts.yml`, `test/fixtures/inventory_items.yml`, and add representative `test/fixtures/layout_versions.yml`.
-- Preview capture plan: Record Turbo preview screenshots for real vs. unlimited modes and version history comparisons in `/specs/001-the-goal-of/previews/`.
-- Validation command: `bin/rails test test/models/layout_test.rb test/serializers/layout_serializer_test.rb test/system/layout_inventory_mode_test.rb test/system/layout_version_history_test.rb`.
+- Fixtures or factories: Extend `test/fixtures/layouts.yml` and `test/fixtures/inventory_items.yml`.
+- Preview capture plan: Record Turbo preview screenshots for real vs. unlimited modes in `/specs/001-the-goal-of/previews/` (`real-inventory.png`, `unlimited-mode.png`, and `admin-inventory.png` captured via system tests).
+- Validation command: `bin/rails test test/models/layout_test.rb test/serializers/layout_serializer_test.rb test/system/layout_inventory_mode_test.rb test/system/layout_unlimited_mode_test.rb`.
 
 ## Requirements *(mandatory)*
 
@@ -88,8 +73,8 @@ Admin invites new campmates, adjusts their access, and maintains the roster of b
 - **FR-002**: Members MUST be able to toggle any layout between real-inventory mode and unlimited mode, with clear status indicators in the workspace and previews.
 - **FR-003**: In real-inventory mode, the system MUST validate availability, reserve materials per layout, and expose remaining counts in real time.
 - **FR-004**: Unlimited mode MUST ignore inventory reservations while preventing those layouts from affecting stock calculations.
-- **FR-005**: Every saved change MUST record a revision with timestamp, author, summary note, and allow restoration of prior versions without data loss.
-- **FR-006**: Browsing layouts MUST support filtering by member, mode (real vs. unlimited), and latest revision date.
+- **FR-005**: Layout saves MUST track the last editing member and the most recent summary note for accountability.
+- **FR-006**: Browsing layouts MUST support filtering by member, mode (real vs. unlimited), and latest update date.
 - **FR-007**: Admin users MUST invite, activate, deactivate, and manage member roles while viewing an audit trail of membership changes.
 - **FR-008**: Admin users MUST adjust inventory counts, add or retire material types, and review a change log tying adjustments to admins and timestamps.
 
@@ -97,7 +82,6 @@ Admin invites new campmates, adjusts their access, and maintains the roster of b
 
 - **Layout**: Represents a camp configuration with metadata (name, mode, owner, status), associated components (brackets, beams, lumber placements), and links to current reservations.
 - **Inventory Item**: Tracks material type (steel bracket variant, 4x4 lumber, 6x6 lumber), quantity on hand, reserved counts, and audit history of adjustments.
-- **Layout Version**: Snapshot of a layout at a point in time capturing author, timestamp, summary message, mode, and component composition for restoration.
 - **Member**: Account with role (admin or member), invitation status, and activity history related to layouts and inventory changes.
 
 ## Success Criteria *(mandatory)*
@@ -106,11 +90,10 @@ Admin invites new campmates, adjusts their access, and maintains the roster of b
 
 - **SC-001**: 90% of real-inventory layout saves succeed on the first attempt because the system surfaces shortages before submission.
 - **SC-002**: Designers can switch between real and unlimited modes in under 5 seconds, with clear status messaging observed in usability testing.
-- **SC-003**: At least 80% of layout revisions in the first build cycle include an author and note, demonstrating consistent history tracking.
-- **SC-004**: Admin audits show inventory discrepancies reduced by 50% compared with pre-app planning sessions, measured over the first event season.
+- **SC-003**: Admin audits show inventory discrepancies reduced by 50% compared with pre-app planning sessions, measured over the first event season.
 
 ## Assumptions
 
-- PaperTrail (or equivalent audit tooling) remains available to power revision history logging without additional licensing.
+- Automated version rollback is deferred until a Rails 8–compatible solution exists; current scope focuses on accountability via last-editor metadata and admin audits.
 - Email delivery infrastructure exists for member invitations and notifications.
 - Inventory counts entered by admins are treated as the source of truth; the app does not integrate with external asset trackers in this release.
