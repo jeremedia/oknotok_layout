@@ -1,5 +1,5 @@
 # app/controllers/api/v1/beams_controller.rb
-class Api::V1::BeamsController < ActionController::API
+class Api::V1::BeamsController < Api::BaseController
   before_action :set_layout, only: [:index, :create]
   before_action :set_beam, only: [:show, :update, :destroy]
 

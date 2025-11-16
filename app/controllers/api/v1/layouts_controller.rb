@@ -1,5 +1,5 @@
 # app/controllers/api/v1/layouts_controller.rb
-class Api::V1::LayoutsController < ActionController::API
+class Api::V1::LayoutsController < Api::BaseController
   before_action :set_layout, only: [:show, :update, :destroy, :clear]
 
   # GET /api/v1/layouts

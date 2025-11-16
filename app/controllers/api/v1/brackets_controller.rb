@@ -1,5 +1,5 @@
 # app/controllers/api/v1/brackets_controller.rb
-class Api::V1::BracketsController < ActionController::API
+class Api::V1::BracketsController < Api::BaseController
   before_action :set_layout, only: [:index, :create]
   before_action :set_bracket, only: [:show, :update, :destroy]
 
