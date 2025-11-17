@@ -26,11 +26,13 @@ import {addGroundBeamAndPanelVisuals, removeGroundBeamAndPanelVisuals} from './m
 import {updateBeamFlag} from './apiClient.js'; // Import new API function
 import toast from './toast.js'; // Import toast notifications
 import { showButtonLoading } from './loadingIndicator.js'; // Import loading indicators
+import { highlightBracketSockets, unhighlightBracketSockets, clearAllSocketHighlights } from './socketHighlighter.js'; // Import socket highlighter
 
 // --- State ---
 let sceneRef, cameraRef, rendererRef, groundPlaneMeshRef, currentLayoutData, clockRef, controlsRef;
 let isSpacebarDown = false;
 let modeBeforeSpacebar = null;
+let lastHighlightedBracket = null; // Track last highlighted bracket for socket feedback
 
 // --- UI Handlers ---
 async function handleUpdateMetadata() {
@@ -646,6 +648,79 @@ async function onActionKeysDown(event) {
 } // --- End of onActionKeysDown ---
 
 
+// --- Mouse Move Handler (Socket Highlighting) ---
+function onMouseMove(event) {
+    const currentMode = getMode();
+
+    // Only highlight sockets in create mode
+    if (currentMode !== 'create') {
+        // Clear any existing highlights if we're not in create mode
+        if (lastHighlightedBracket) {
+            unhighlightBracketSockets(lastHighlightedBracket);
+            lastHighlightedBracket = null;
+        }
+        return;
+    }
+
+    if (!rendererRef || !cameraRef || !sceneRef) return;
+
+    // Calculate mouse position in normalized device coordinates (-1 to +1)
+    const rect = rendererRef.domElement.getBoundingClientRect();
+    const mouse = new THREE.Vector2();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    // Raycast to find brackets under mouse
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(mouse, cameraRef);
+
+    // Find all bracket groups in the scene
+    const bracketGroups = [];
+    sceneRef.traverse((object) => {
+        if (object.isGroup && object.userData.type === 'bracket') {
+            bracketGroups.push(object);
+        }
+    });
+
+    // Raycast against all bracket meshes
+    const intersects = raycaster.intersectObjects(bracketGroups, true);
+
+    if (intersects.length > 0) {
+        // Find the bracket group that was hit
+        let hoveredBracket = null;
+        for (const intersect of intersects) {
+            let obj = intersect.object;
+            while (obj && !obj.userData.type) {
+                obj = obj.parent;
+            }
+            if (obj && obj.userData.type === 'bracket') {
+                hoveredBracket = obj;
+                break;
+            }
+        }
+
+        if (hoveredBracket) {
+            // If this is a different bracket than last time, update highlights
+            if (hoveredBracket !== lastHighlightedBracket) {
+                // Clear previous highlight
+                if (lastHighlightedBracket) {
+                    unhighlightBracketSockets(lastHighlightedBracket);
+                }
+
+                // Highlight new bracket's sockets
+                highlightBracketSockets(hoveredBracket, currentLayoutData, true);
+                lastHighlightedBracket = hoveredBracket;
+            }
+        }
+    } else {
+        // No bracket under mouse, clear highlights
+        if (lastHighlightedBracket) {
+            unhighlightBracketSockets(lastHighlightedBracket);
+            lastHighlightedBracket = null;
+        }
+    }
+}
+
 // --- Spacebar Handlers ---
 function onSpacebarDown(event) {
     if (event.code !== 'Space' || isSpacebarDown || getMode() === 'view') return;
@@ -728,7 +803,7 @@ function checkAllExistingBeamsForSquares() {
 
 // --- Exports ---
 export {
-    onMouseClick, onActionKeysDown, onSpacebarDown, onSpacebarUp,
+    onMouseClick, onMouseMove, onActionKeysDown, onSpacebarDown, onSpacebarUp,
     setHandlerReferences, resetSpacebarOverride, saveCameraState,
     handleUpdateMetadata, handleClearLayout, handleNewLayout,
     checkAllExistingBeamsForSquares, checkForCompletedSquares

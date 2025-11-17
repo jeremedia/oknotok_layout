@@ -19,6 +19,10 @@ function setMode(newMode) {
     if (eventHandlersRef && eventHandlersRef.resetSpacebarOverride) {
         eventHandlersRef.resetSpacebarOverride();
     }
+    // Clear socket highlights when leaving create mode
+    if (eventHandlersRef && eventHandlersRef.clearSocketHighlights) {
+        eventHandlersRef.clearSocketHighlights();
+    }
     // --- End reset ---
 
     appMode = newMode;

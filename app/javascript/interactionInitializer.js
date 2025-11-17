@@ -7,6 +7,7 @@ import { initDebugCursor } from './debugCursor.js';
 import { initUndoManager, undoLastAction, redoLastAction } from './undoManager.js'; // Import undo/redo manager
 import {
     onMouseClick,
+    onMouseMove,
     onActionKeysDown, // Use renamed handler
     onSpacebarDown,
     onSpacebarUp,
@@ -15,10 +16,12 @@ import {
     saveCameraState
 } from './eventHandlers.js';
 import { handleUpdateMetadata, handleClearLayout, handleNewLayout, checkAllExistingBeamsForSquares } from './eventHandlers.js';
+import { clearAllSocketHighlights } from './socketHighlighter.js';
 
 // Create an object to pass event handler functions/state if needed by modeManager
 const eventHandlersModuleRef = {
-    resetSpacebarOverride: resetSpacebarOverride
+    resetSpacebarOverride: resetSpacebarOverride,
+    clearSocketHighlights: null
 };
 
 
@@ -35,10 +38,14 @@ function initInteractionHandler(scene, camera, renderer, groundPlane, layoutData
     setHandlerReferences(scene, camera, renderer, groundPlane, layoutDataObj, clock, orbitControls);
 
     initUndoManager(scene, layoutDataObj, clock); // Pass mutable layoutDataObj
+    
+    // Set up socket highlight clearing function with scene reference
+    eventHandlersModuleRef.clearSocketHighlights = () => clearAllSocketHighlights(scene);
 
 
     // 4. Add Core Event Listeners
     renderer.domElement.addEventListener('click', onMouseClick, false);
+    renderer.domElement.addEventListener('mousemove', onMouseMove, false); // Socket highlighting on hover
     // Use separate listeners for different key purposes
     window.addEventListener('keydown', onSpacebarDown, false); // Handles spacebar press
     window.addEventListener('keyup', onSpacebarUp, false);     // Handles spacebar release
