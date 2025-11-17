@@ -11,7 +11,7 @@ import { isSocketAvailable } from './geometryUtils.js';
 // Socket highlight colors
 const SOCKET_AVAILABLE_COLOR = 0x00ff00; // Bright green
 const SOCKET_OCCUPIED_COLOR = 0xff0000;  // Bright red
-const SOCKET_NEUTRAL_COLOR = 0xaaaaaa;   // Default gray
+// const _SOCKET_NEUTRAL_COLOR = 0xaaaaaa;   // Default gray (reserved for future use)
 
 // Store original materials to restore later
 const originalMaterials = new Map();
@@ -24,16 +24,16 @@ const originalMaterials = new Map();
  * @param {boolean} showOccupied - Whether to show occupied sockets in red (default: true)
  */
 export function highlightBracketSockets(bracketGroup, layoutData, showOccupied = true) {
-    if (!bracketGroup || !layoutData) return;
+    if (!bracketGroup || !layoutData) {return;}
 
     const bracketId = bracketGroup.userData.id;
-    if (!bracketId) return;
+    if (!bracketId) {return;}
 
     // Find all socket meshes in the bracket group
     bracketGroup.traverse((child) => {
         if (child.isMesh && child.userData.type === 'socket') {
             const socketName = child.userData.socketName;
-            if (!socketName) return;
+            if (!socketName) {return;}
 
             // Store original material if not already stored
             if (!originalMaterials.has(child.uuid)) {
@@ -75,7 +75,7 @@ export function highlightBracketSockets(bracketGroup, layoutData, showOccupied =
  * @param {number} emissiveIntensity - How bright the glow should be (default: 0.7)
  */
 export function highlightSpecificSocket(bracketGroup, socketName, color = SOCKET_AVAILABLE_COLOR, emissiveIntensity = 0.7) {
-    if (!bracketGroup || !socketName) return;
+    if (!bracketGroup || !socketName) {return;}
 
     bracketGroup.traverse((child) => {
         if (child.isMesh &&
@@ -105,7 +105,7 @@ export function highlightSpecificSocket(bracketGroup, socketName, color = SOCKET
  * @param {THREE.Group} bracketGroup - The bracket group to unhighlight
  */
 export function unhighlightBracketSockets(bracketGroup) {
-    if (!bracketGroup) return;
+    if (!bracketGroup) {return;}
 
     bracketGroup.traverse((child) => {
         if (child.isMesh && child.userData.type === 'socket') {
@@ -129,7 +129,7 @@ export function unhighlightBracketSockets(bracketGroup) {
  * @param {THREE.Scene} scene - The Three.js scene
  */
 export function clearAllSocketHighlights(scene) {
-    if (!scene) return;
+    if (!scene) {return;}
 
     scene.traverse((object) => {
         if (object.isGroup && object.userData.type === 'bracket') {
@@ -146,7 +146,7 @@ export function clearAllSocketHighlights(scene) {
  * @param {Object} layoutData - The layout data
  */
 export function highlightAllAvailableSockets(scene, layoutData) {
-    if (!scene || !layoutData) return;
+    if (!scene || !layoutData) {return;}
 
     scene.traverse((object) => {
         if (object.isGroup && object.userData.type === 'bracket') {
@@ -164,10 +164,10 @@ export function highlightAllAvailableSockets(scene, layoutData) {
  * @param {number} duration - How long to pulse (ms)
  */
 export function pulseSocket(bracketGroup, socketName, duration = 2000) {
-    if (!bracketGroup || !socketName) return;
+    if (!bracketGroup || !socketName) {return;}
 
     const socket = findSocket(bracketGroup, socketName);
-    if (!socket) return;
+    if (!socket) {return;}
 
     // Store original material
     if (!originalMaterials.has(socket.uuid)) {

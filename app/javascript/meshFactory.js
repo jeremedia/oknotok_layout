@@ -2,7 +2,7 @@
 
 import * as THREE from 'three';
 import {
-    UPRIGHT_HEIGHT, CROSSBEAM_LENGTH, BRACKET_SOCKET_DEPTH,
+    CROSSBEAM_LENGTH, BRACKET_SOCKET_DEPTH,
     BEAM_WIDTH, BEAM_DEPTH, DEFAULT_PLOT_SIZE,
     COLOR_BRACKET, COLOR_BEAM, COLOR_PLOT_BOUNDARY,
     COLOR_GRID_CENTER, COLOR_GRID,
@@ -20,8 +20,8 @@ import {
     BOUNDARY_BOX_HEIGHT,
     GROUND_PLANE_VERTICES_HEIGHT
 } from './constants.js';
-import { checkForCompletedSquares}  from "./eventHandlers";
-import { requestRender } from "./sceneSetup.js";
+import { checkForCompletedSquares}  from './eventHandlers';
+import { requestRender } from './sceneSetup.js';
 
 // --- Reusable Meshes/Materials (Shared Resources - DO NOT DISPOSE) ---
 // These are reused across many objects for performance. They are marked as shared
@@ -77,9 +77,9 @@ centralCubeGeometry.userData.isShared = true; // Mark as shared - don't dispose
 
 
 function addBracketMesh(bracketData, scene, clock) { // Pass clock instance
-    if (!bracketData || !scene || !clock) return null;
+    if (!bracketData || !scene || !clock) {return null;}
     const bracketGroupName = `bracket_group_${bracketData.id}`;
-    if (scene.getObjectByName(bracketGroupName)) return scene.getObjectByName(bracketGroupName);
+    if (scene.getObjectByName(bracketGroupName)) {return scene.getObjectByName(bracketGroupName);}
 
     // ... (Group creation, positioning, userData setup - keep as before) ...
     const bracketGroup = new THREE.Group();
@@ -134,9 +134,9 @@ function addBracketMesh(bracketData, scene, clock) { // Pass clock instance
 }
 
 function addBeamMesh(beamData, scene, clock) {
-    if (!beamData || !scene || !clock) return null;
+    if (!beamData || !scene || !clock) {return null;}
     const beamGroupName = `beam_group_${beamData.id}`;
-    if (scene.getObjectByName(beamGroupName)) return scene.getObjectByName(beamGroupName);
+    if (scene.getObjectByName(beamGroupName)) {return scene.getObjectByName(beamGroupName);}
 
     let visibleLength = beamData.length;
     const startBracketGroup = scene.getObjectByName(`bracket_group_${beamData.start_bracket_id}`);
@@ -161,7 +161,7 @@ function addBeamMesh(beamData, scene, clock) {
         beamType: beamData.beam_type, // Store type
         isGrounded: isGroundedUpright, // Store grounded status
         originalMaterialRef: meshMaterial,
-        sourceData: beamData, // Store original data
+        sourceData: beamData // Store original data
     };
 
     // --- Animation Data --- (Keep as before)
@@ -263,13 +263,13 @@ function getSocketExitOffset(socketName) {
 // --- Bulk Rendering Functions ---
 
 function renderBrackets(brackets, scene, clock) {
-    if (!brackets || !scene) return;
+    if (!brackets || !scene) {return;}
     console.log(`Rendering ${brackets.length} brackets.`);
     brackets.forEach(bracketData => addBracketMesh(bracketData, scene, clock));
 }
 
 function renderBeams(beams, scene, clock) {
-    if (!beams || !scene) return;
+    if (!beams || !scene) {return;}
     console.log(`Rendering ${beams.length} beams.`);
     // Important: Render beams *after* all brackets are potentially in the scene
     beams.forEach(beamData => addBeamMesh(beamData, scene, clock));
@@ -277,7 +277,7 @@ function renderBeams(beams, scene, clock) {
 
 // --- NEW: Add Shade Cloth ---
 function addShadeClothMesh(bracketIds, scene, clock) { // Pass clock
-    if (!bracketIds || bracketIds.length !== 4 || !scene || !clock) return null; // Check clock
+    if (!bracketIds || bracketIds.length !== 4 || !scene || !clock) {return null;} // Check clock
 
     const sortedIds = [...bracketIds].sort((a, b) => a - b);
     const shadeClothName = `shade_cloth_${sortedIds.join('_')}`;
@@ -322,14 +322,14 @@ function addShadeClothMesh(bracketIds, scene, clock) { // Pass clock
 }
 
 function renderPlotBoundary(width, depth, scene) {
-    if (!scene) return;
+    if (!scene) {return;}
     // Remove existing boundary/grid if any
-    const existingBoundary = scene.getObjectByName("plotBoundary");
+    const existingBoundary = scene.getObjectByName('plotBoundary');
     if (existingBoundary) {
         scene.remove(existingBoundary);
         requestRender(); // Request render for boundary removal
     }
-    const existingGrid = scene.getObjectByName("plotGrid");
+    const existingGrid = scene.getObjectByName('plotGrid');
     if (existingGrid) {
         scene.remove(existingGrid);
         requestRender(); // Request render for grid removal
@@ -343,7 +343,7 @@ function renderPlotBoundary(width, depth, scene) {
 
     // Draw GridHelper matching plot size
     const gridHelper = new THREE.GridHelper(maxSize, maxSize / 5, COLOR_GRID_CENTER, COLOR_GRID);
-    gridHelper.name = "plotGrid";
+    gridHelper.name = 'plotGrid';
     // scene.add(gridHelper);
 
     // Draw boundary lines
@@ -355,7 +355,7 @@ function renderPlotBoundary(width, depth, scene) {
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
     const material = new THREE.LineBasicMaterial({ color: COLOR_PLOT_BOUNDARY, linewidth: 2 });
     const boundary = new THREE.Line(geometry, material);
-    boundary.name = "plotBoundary";
+    boundary.name = 'plotBoundary';
     boundary.position.y = BOUNDARY_LINE_HEIGHT; // Slightly above ground plane
     scene.add(boundary);
     requestRender(); // Request render for boundary update
@@ -365,7 +365,7 @@ function renderPlotBoundary(width, depth, scene) {
     const boxGeometry = new THREE.BoxGeometry(w, BOUNDARY_BOX_HEIGHT, d);
     const boxMaterial = new THREE.MeshBasicMaterial({ color: COLOR_PLOT_GROUND, side: THREE.DoubleSide });
     const boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
-    boxMesh.name = "plotBoundaryBox";
+    boxMesh.name = 'plotBoundaryBox';
     boxMesh.position.set(0, BOUNDARY_BOX_HEIGHT, 0); // Centered
     scene.add(boxMesh);
     requestRender(); // Request render for boundary box
@@ -412,7 +412,7 @@ function disposeGeometryAndMaterial(geometry, material) {
  * @param {THREE.Scene} scene - The Three.js scene
  */
 function removeMesh(objectToRemove, scene) {
-    if (!objectToRemove || !scene) return;
+    if (!objectToRemove || !scene) {return;}
 
     console.log(`Removing object: ${objectToRemove.name}`);
 
@@ -471,11 +471,11 @@ function removeMesh(objectToRemove, scene) {
  * @returns {Object|null} - An object containing { groundBeamGroup, panelMesh } or null on error.
  */
 function addGroundBeamAndPanelVisuals(topBeamGroup, scene, clock, squareBracketPositions) {
-    if (!topBeamGroup || !scene || !clock) return null;
+    if (!topBeamGroup || !scene || !clock) {return null;}
 
     if(squareBracketPositions === null || squareBracketPositions === undefined) {
         const beamData = topBeamGroup.userData.sourceData;
-        squareBracketPositions = checkForCompletedSquares(beamData)
+        squareBracketPositions = checkForCompletedSquares(beamData);
     }
     const topBeamId = topBeamGroup.userData.id;
     const groundBeamName = `ground_beam_vis_${topBeamId}`;
@@ -503,16 +503,16 @@ function addGroundBeamAndPanelVisuals(topBeamGroup, scene, clock, squareBracketP
         // scene.add(sphereMesh);
     } else {
         // Fallback: if no square data, use a default center.
-        console.log("no square bracket positions provided, aborting.");
+        console.log('no square bracket positions provided, aborting.');
         return;
         // roofCenter = new THREE.Vector3(0, 8, 0);
     }
-    console.log("Computed roof center:", roofCenter);
+    console.log('Computed roof center:', roofCenter);
 
     // --- 2. Get the top beam's world position.
     const topPos = new THREE.Vector3();
     topBeamGroup.getWorldPosition(topPos);
-    console.log("Top beam position:", topPos);
+    console.log('Top beam position:', topPos);
 
     // --- 3. Determine the "outward" direction ---
     // The direction is from the roof center towards the top beam.
@@ -520,7 +520,7 @@ function addGroundBeamAndPanelVisuals(topBeamGroup, scene, clock, squareBracketP
     const outwardDir = topPos.clone().sub(roofCenter);
     outwardDir.y = 0;
     outwardDir.normalize();
-    console.log("Outward direction (from roof center to top beam):", outwardDir);
+    console.log('Outward direction (from roof center to top beam):', outwardDir);
 
     // draw a line from the roof center to the top beam
     // const lineGeometry = new THREE.BufferGeometry().setFromPoints([roofCenter, topPos]);
@@ -550,7 +550,7 @@ function addGroundBeamAndPanelVisuals(topBeamGroup, scene, clock, squareBracketP
     ); // ≈ 8.944 ft
     const groundPos = topPos.clone().add(outwardDir.clone().multiplyScalar(horizontalOffset));
     groundPos.y = 0; // Ground beam sits at y = 0.
-    console.log("Ground beam position:", groundPos);
+    console.log('Ground beam position:', groundPos);
 
     // --- 5. Create the ground beam visual ---
     const groundBeamGeom = new THREE.BoxGeometry(BEAM_WIDTH, CROSSBEAM_LENGTH, BEAM_DEPTH);
@@ -565,40 +565,40 @@ function addGroundBeamAndPanelVisuals(topBeamGroup, scene, clock, squareBracketP
     // const lineMesh2 = new THREE.Line(lineGeometry2, lineMaterial2);
     // scene.add(lineMesh2);
 
-//     // Optionally, align the ground beam's rotation with the top beam's yaw.
-//     // Ensure the world matrices are updated
-//     topBeamGroup.updateMatrixWorld(true);
-//
-// // Retrieve the world quaternion for the object
-//     const worldQuaternion = new THREE.Quaternion();
-//     topBeamGroup.getWorldQuaternion(worldQuaternion);
-//
-// // Convert the quaternion to Euler angles (specify rotation order as needed)
-//     const worldEuler = new THREE.Euler().setFromQuaternion(worldQuaternion, 'XYZ');
-//
-// // Get the y-axis rotation value
-//     const yRotation = worldEuler.y;
-//     console.log("World Y Rotation:", yRotation);
-//
-//
-//     const groundRotY = yRotation;
-//     const quatX = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
-//     const quatY = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), groundRotY);
-//     groundBeamGroup.quaternion.multiplyQuaternions(quatY, quatX);
-//     groundBeamGroup.add(groundBeamMesh);
-//     scene.add(groundBeamGroup);
+    //     // Optionally, align the ground beam's rotation with the top beam's yaw.
+    //     // Ensure the world matrices are updated
+    //     topBeamGroup.updateMatrixWorld(true);
+    //
+    // // Retrieve the world quaternion for the object
+    //     const worldQuaternion = new THREE.Quaternion();
+    //     topBeamGroup.getWorldQuaternion(worldQuaternion);
+    //
+    // // Convert the quaternion to Euler angles (specify rotation order as needed)
+    //     const worldEuler = new THREE.Euler().setFromQuaternion(worldQuaternion, 'XYZ');
+    //
+    // // Get the y-axis rotation value
+    //     const yRotation = worldEuler.y;
+    //     console.log("World Y Rotation:", yRotation);
+    //
+    //
+    //     const groundRotY = yRotation;
+    //     const quatX = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+    //     const quatY = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), groundRotY);
+    //     groundBeamGroup.quaternion.multiplyQuaternions(quatY, quatX);
+    //     groundBeamGroup.add(groundBeamMesh);
+    //     scene.add(groundBeamGroup);
 
     const worldQuat = new THREE.Quaternion();
     topBeamGroup.getWorldQuaternion(worldQuat);
 
     if (groundBeamGroup.parent) {
         const parentWorldQuat = new THREE.Quaternion();
-       groundBeamGroup.parent.getWorldQuaternion(parentWorldQuat);
+        groundBeamGroup.parent.getWorldQuaternion(parentWorldQuat);
         parentWorldQuat.invert();
-      groundBeamGroup.quaternion.copy(parentWorldQuat.multiply(worldQuat));
+        groundBeamGroup.quaternion.copy(parentWorldQuat.multiply(worldQuat));
     } else {
         // If target has no parent, you can assign the world rotation directly.
-       groundBeamGroup.quaternion.copy(worldQuat);
+        groundBeamGroup.quaternion.copy(worldQuat);
     }
     groundBeamGroup.position.copy(groundPos);
     groundBeamGroup.add(groundBeamMesh);
@@ -614,7 +614,7 @@ function addGroundBeamAndPanelVisuals(topBeamGroup, scene, clock, squareBracketP
     // Place the panel at the midpoint between the top beam and ground beam.
     const panelCenter = topPos.clone().add(groundPos).multiplyScalar(0.5);
     panelMesh.position.copy(panelCenter);
-    console.log("Panel center:", panelCenter);
+    console.log('Panel center:', panelCenter);
 
     // --- 8. Define the Panel's Local Coordinate System ---
     // COORDINATE SYSTEM EXPLANATION:
@@ -627,7 +627,7 @@ function addGroundBeamAndPanelVisuals(topBeamGroup, scene, clock, squareBracketP
 
     // localY: Primary axis - defines the slope direction (ground → top)
     const localY = new THREE.Vector3().subVectors(topPos, groundPos).normalize();
-    console.log("Panel local Y (slope direction):", localY);
+    console.log('Panel local Y (slope direction):', localY);
 
     // localX: Secondary axis - panel width direction, perpendicular to slope
     // Start with vector pointing from roof center to top beam (outward direction)
@@ -636,18 +636,18 @@ function addGroundBeamAndPanelVisuals(topBeamGroup, scene, clock, squareBracketP
     // Formula: v_perp = v - (v · u)u where u is the unit vector to project onto
     const dot = candidateX.dot(localY);
     const localX = candidateX.sub(localY.clone().multiplyScalar(dot)).normalize();
-    console.log("Panel local X:", localX);
+    console.log('Panel local X:', localX);
 
     // localZ: Tertiary axis - panel normal (points perpendicular to panel surface)
     // Computed as cross product to ensure right-handed coordinate system
     const localZ = new THREE.Vector3().crossVectors(localX, localY).normalize();
-    console.log("Panel local Z (normal):", localZ);
+    console.log('Panel local Z (normal):', localZ);
 
     // --- 9. Build the Rotation Matrix and Derive the Quaternion ---
     // The basis is (localX, localY, localZ), which aligns with the panel’s geometry.
     const rotationMatrix = new THREE.Matrix4().makeBasis(localX, localY, localZ);
     const panelQuaternion = new THREE.Quaternion().setFromRotationMatrix(rotationMatrix);
-    console.log("Panel quaternion:", panelQuaternion);
+    console.log('Panel quaternion:', panelQuaternion);
 
     // --- 10. Apply the Orientation to the Panel ---
     panelMesh.quaternion.copy(panelQuaternion);
@@ -669,7 +669,7 @@ function addGroundBeamAndPanelVisuals(topBeamGroup, scene, clock, squareBracketP
 
 // NEW function to remove panel visuals
 function removeGroundBeamAndPanelVisuals(topBeamId, scene) {
-    if (!topBeamId || !scene) return;
+    if (!topBeamId || !scene) {return;}
     const groundBeamName = `ground_beam_vis_${topBeamId}`;
     const panelName = `panel_vis_${topBeamId}`;
     const groundBeamVis = scene.getObjectByName(groundBeamName);

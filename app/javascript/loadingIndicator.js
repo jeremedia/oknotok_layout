@@ -12,7 +12,7 @@
  * @returns {Function} - Function to call to restore button state
  */
 export function showButtonLoading(button, loadingText = 'Loading...') {
-    if (!button) return () => {};
+    if (!button) {return () => {};}
 
     // Store original state
     const originalText = button.textContent;
@@ -72,7 +72,7 @@ export function showGlobalLoading(message = 'Loading...') {
     } else {
         // Update message if overlay already exists
         const messageEl = globalLoadingOverlay.querySelector('.loading-message');
-        if (messageEl) messageEl.textContent = message;
+        if (messageEl) {messageEl.textContent = message;}
     }
 
     // Trigger animation

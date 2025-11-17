@@ -42,7 +42,7 @@ import { addShadeClothMesh } from './meshFactory.js';
 export function checkForCompletedSquares(triggerBeamData, layoutData, scene, clock) {
     console.log(`Checking for squares triggered by beam: ${triggerBeamData?.id}`);
     if (!layoutData || !layoutData.brackets || !layoutData.beams || triggerBeamData.beam_type !== 'crossbeam') {
-        console.log(" -> Check aborted: Invalid data or not a crossbeam.");
+        console.log(' -> Check aborted: Invalid data or not a crossbeam.');
         return;
     }
 
@@ -116,7 +116,7 @@ export function checkForCompletedSquares(triggerBeamData, layoutData, scene, clo
                 addShadeClothMesh([bA_id, bB_id, bC_id, bD_id], scene, clock);
                 // collect the four bracket positions and return them as an array
                 const bracketPositions = [bA, bB, bC, bD].map(b => new THREE.Vector3(b.x, b.y, b.z));
-                console.log("          -> Completed square found with brackets:", bracketPositions);
+                console.log('          -> Completed square found with brackets:', bracketPositions);
                 return bracketPositions; // Stop searching
             }
         }
@@ -132,9 +132,9 @@ export function checkForCompletedSquares(triggerBeamData, layoutData, scene, clo
  * @param {THREE.Clock} clock - The clock for animations
  */
 export function checkAllExistingBeamsForSquares(layoutData, scene, clock) {
-    console.log("Checking all initially loaded beams for completed squares...");
+    console.log('Checking all initially loaded beams for completed squares...');
     if (!layoutData || !layoutData.beams) {
-        console.log(" -> No beams data available for initial check.");
+        console.log(' -> No beams data available for initial check.');
         return;
     }
 
@@ -147,5 +147,5 @@ export function checkAllExistingBeamsForSquares(layoutData, scene, clock) {
             checkForCompletedSquares(beam, layoutData, scene, clock);
         }
     });
-    console.log("Initial square check complete.");
+    console.log('Initial square check complete.');
 }

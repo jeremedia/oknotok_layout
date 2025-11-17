@@ -1,12 +1,17 @@
 {
   "name": "app",
+  "type": "module",
   "private": true,
   "devDependencies": {
-    "esbuild": "^0.25.2"
+    "@eslint/js": "^9.39.1",
+    "esbuild": "^0.25.2",
+    "eslint": "^9.39.1"
   },
   "scripts": {
     "build": "esbuild app/javascript/*.* --bundle --sourcemap --format=esm --outdir=app/assets/builds --public-path=/assets",
-    "build:css": "npx @tailwindcss/cli -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --minify"
+    "build:css": "npx @tailwindcss/cli -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --minify",
+    "lint": "eslint app/javascript",
+    "lint:fix": "eslint app/javascript --fix"
   },
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",

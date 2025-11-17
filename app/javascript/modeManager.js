@@ -7,7 +7,7 @@ let selectionManager = null;
 let eventHandlersRef = null; // We'll set this
 
 function setMode(newMode) {
-    if (appMode === newMode || !['view', 'create', 'delete'].includes(newMode)) return;
+    if (appMode === newMode || !['view', 'create', 'delete'].includes(newMode)) {return;}
 
     console.log(`Changing mode from ${appMode} to ${newMode}`);
 
@@ -30,7 +30,7 @@ function setMode(newMode) {
     // ... (Update button visuals - keep as before) ...
     document.querySelectorAll('.mode-button').forEach(btn => btn.classList.remove('active'));
     const activeButton = document.getElementById(`btn-mode-${newMode}`);
-    if (activeButton) activeButton.classList.add('active');
+    if (activeButton) {activeButton.classList.add('active');}
 
 
     // Enable/Disable OrbitControls based on the *explicitly set* mode
@@ -42,9 +42,9 @@ function setMode(newMode) {
     // Update cursor style
     const container = document.getElementById('threejs-container');
     if (container) {
-        if (appMode === 'create') container.style.cursor = 'crosshair';
-        else if (appMode === 'delete') container.style.cursor = 'not-allowed';
-        else container.style.cursor = 'grab'; // Default for view/orbiting
+        if (appMode === 'create') {container.style.cursor = 'crosshair';}
+        else if (appMode === 'delete') {container.style.cursor = 'not-allowed';}
+        else {container.style.cursor = 'grab';} // Default for view/orbiting
     }
 }
 
@@ -63,7 +63,7 @@ function initModeManager(initialMode = 'view', orbitControls, selManager, evtHan
     document.getElementById('btn-mode-delete')?.addEventListener('click', () => setMode('delete'));
 
     setMode(initialMode); // Set initial mode
-    console.log("Mode Manager Initialized.");
+    console.log('Mode Manager Initialized.');
 }
 
 // Export the module reference object if needed by setMode

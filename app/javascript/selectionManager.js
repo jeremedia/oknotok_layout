@@ -4,7 +4,7 @@ import { COLOR_SELECTION } from './constants.js';
 
 let selectedObjectGroup = null;
 let firstBracketForConnection = null; // Still needed for create mode logic
-let originalChildMaterials = new Map(); // Store original material UUID -> Material for children
+const originalChildMaterials = new Map(); // Store original material UUID -> Material for children
 
 const selectionMaterial = new THREE.MeshStandardMaterial({ color: COLOR_SELECTION });
 
@@ -38,7 +38,7 @@ function clearSelectionState() {
 }
 
 function selectObject(objectGroup, currentAppMode) {
-    if (!objectGroup || !objectGroup.isGroup) return false;
+    if (!objectGroup || !objectGroup.isGroup) {return false;}
 
     // If clicking the already selected object, deselect it and return
     if (selectedObjectGroup === objectGroup) {
@@ -68,7 +68,7 @@ function selectObject(objectGroup, currentAppMode) {
     });
 
     if (!highlightApplied) {
-        console.warn("Selected group had no child meshes to highlight:", selectedObjectGroup.name);
+        console.warn('Selected group had no child meshes to highlight:', selectedObjectGroup.name);
     }
 
     console.log(`Selected ${objectGroup.userData.type} ${objectGroup.userData.id}`);
@@ -76,7 +76,7 @@ function selectObject(objectGroup, currentAppMode) {
     // Update connection state if needed
     if (currentAppMode === 'create' && objectGroup.userData.type === 'bracket') {
         firstBracketForConnection = objectGroup;
-        console.log("Ready to connect from this bracket.");
+        console.log('Ready to connect from this bracket.');
     } else {
         firstBracketForConnection = null; // Ensure this is cleared if selecting a beam or in delete mode
     }

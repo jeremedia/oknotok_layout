@@ -11,7 +11,7 @@ async function sendRequest(url = '', method = 'POST', data = {}) {
 
     const config = {
         method: method.toUpperCase(),
-        headers: headers,
+        headers: headers
     };
 
     // Only include body for relevant methods
@@ -25,7 +25,7 @@ async function sendRequest(url = '', method = 'POST', data = {}) {
         let errorData;
         try {
             errorData = await response.json();
-        } catch (e) {
+        } catch (_e) {
             errorData = { error: response.statusText }; // Fallback if no JSON body
         }
         console.error(`API Error Response (${response.status}):`, errorData);
@@ -50,7 +50,7 @@ async function fetchLayoutData(layoutId) {
         throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    console.log("Fetched Layout Data:", data);
+    console.log('Fetched Layout Data:', data);
     return data;
 }
 
@@ -73,7 +73,7 @@ async function placeUpright(layoutId, x, z) {
     };
     const newBeam = await sendRequest(`/api/v1/layouts/${layoutId}/beams`, 'POST', beamPayload);
 
-    console.log("API: Upright placed successfully.", { newBracket, newBeam });
+    console.log('API: Upright placed successfully.', { newBracket, newBeam });
     // Return data for scene update
     return { newBracket, newBeam };
 }
@@ -92,7 +92,7 @@ async function placeCrossbeam(layoutId, bracket1Data, bracket2Data, startSocket,
     };
     const newBeam = await sendRequest(`/api/v1/layouts/${layoutId}/beams`, 'POST', beamPayload);
 
-    console.log("API: Crossbeam placed successfully.", { newBeam });
+    console.log('API: Crossbeam placed successfully.', { newBeam });
     // Return data for scene update
     return { newBeam };
 }
@@ -115,7 +115,7 @@ async function updateLayoutMetadata(layoutId, metadata) {
     console.log(`API: Updating metadata for layout ${layoutId}`, metadata);
     // Use PATCH for partial update
     const updatedLayout = await sendRequest(`/api/v1/layouts/${layoutId}`, 'PATCH', { layout: metadata });
-    console.log("API: Layout metadata updated.", updatedLayout);
+    console.log('API: Layout metadata updated.', updatedLayout);
     return updatedLayout; // Return updated layout data
 }
 
@@ -130,7 +130,7 @@ async function updateBeamFlag(beamId, flags) {
     console.log(`API: Updating flags for beam ${beamId}`, flags);
     // flags should be like { has_side_panel: true } or { has_side_panel: false }
     const updatedBeam = await sendRequest(`/api/v1/beams/${beamId}`, 'PATCH', { beam: flags });
-    console.log("API: Beam flags updated.", updatedBeam);
+    console.log('API: Beam flags updated.', updatedBeam);
     return updatedBeam;
 }
 

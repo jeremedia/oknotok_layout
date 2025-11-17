@@ -30,7 +30,7 @@ let activeToasts = [];
  * Initializes the toast container and adds it to the DOM
  */
 function initToastContainer() {
-    if (toastContainer) return;
+    if (toastContainer) {return;}
 
     toastContainer = document.createElement('div');
     toastContainer.id = 'toast-container';
@@ -100,7 +100,7 @@ function showToast(message, type = ToastType.INFO, duration = DEFAULT_CONFIG.dur
  * @param {HTMLElement} toast - The toast element to remove
  */
 function removeToast(toast) {
-    if (!toast || !toast.parentNode) return;
+    if (!toast || !toast.parentNode) {return;}
 
     toast.classList.remove('toast-show');
     toast.classList.add('toast-hide');

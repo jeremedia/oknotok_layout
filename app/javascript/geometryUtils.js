@@ -17,7 +17,7 @@ import { CROSSBEAM_LENGTH, POSITION_TOLERANCE } from './constants.js';
  * @returns {boolean} - True if socket is available, false if already occupied
  */
 export function isSocketAvailable(bracketId, socketName, layoutData) {
-    if (!layoutData || !layoutData.beams) return true;
+    if (!layoutData || !layoutData.beams) {return true;}
     return !layoutData.beams.some(beam =>
         (beam.start_bracket_id === bracketId && beam.start_socket === socketName) ||
         (beam.end_bracket_id === bracketId && beam.end_socket === socketName)
@@ -89,7 +89,7 @@ export function calculateNewBracketPosition(startBracketGroup, socketName) {
  * @returns {Object|null} - The bracket data if found, null otherwise
  */
 export function findExistingBracketNear(targetPosition, layoutData, tolerance = POSITION_TOLERANCE) {
-    if (!layoutData || !layoutData.brackets) return null;
+    if (!layoutData || !layoutData.brackets) {return null;}
     for (const bracket of layoutData.brackets) {
         const distance = targetPosition.distanceTo(new THREE.Vector3(bracket.x, bracket.y, bracket.z));
         if (distance < tolerance && Math.abs(targetPosition.y - bracket.y) < tolerance) {

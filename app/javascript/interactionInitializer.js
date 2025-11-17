@@ -26,7 +26,7 @@ const eventHandlersModuleRef = {
 
 
 function initInteractionHandler(scene, camera, renderer, groundPlane, layoutDataObj, orbitControls, clock) { // Added clock back if needed by other parts
-    console.log("Initializing all interaction modules.");
+    console.log('Initializing all interaction modules.');
 
     // 1. Initialize Mode Manager (pass controls, selection manager, AND event handler ref)
     initModeManager('view', orbitControls, selectionManager, eventHandlersModuleRef);
@@ -38,7 +38,7 @@ function initInteractionHandler(scene, camera, renderer, groundPlane, layoutData
     setHandlerReferences(scene, camera, renderer, groundPlane, layoutDataObj, clock, orbitControls);
 
     initUndoManager(scene, layoutDataObj, clock); // Pass mutable layoutDataObj
-    
+
     // Set up socket highlight clearing function with scene reference
     eventHandlersModuleRef.clearSocketHighlights = () => clearAllSocketHighlights(scene);
 
@@ -62,7 +62,7 @@ function initInteractionHandler(scene, camera, renderer, groundPlane, layoutData
     // --- End NEW ---
 
 
-    console.log("Interaction handler initialization complete.");
+    console.log('Interaction handler initialization complete.');
 }
 
 export { initInteractionHandler, checkAllExistingBeamsForSquares };

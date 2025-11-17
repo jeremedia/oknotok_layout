@@ -19,7 +19,7 @@ export const BRACKET_OVERLAP_TOLERANCE = 1.0; // Min distance between brackets (
 
 // --- Colors ---
 export const COLOR_BRACKET = 0xffa500; // Orange
-export const COLOR_BEAM = "red";    // SaddleBrown
+export const COLOR_BEAM = 'red';    // SaddleBrown
 export const COLOR_SELECTION = 0x00ff00; // Green
 export const COLOR_PLOT_BOUNDARY = 0x0000ff; // Blue
 export const COLOR_PLOT_GROUND = 0xafac76; // Tan/beige

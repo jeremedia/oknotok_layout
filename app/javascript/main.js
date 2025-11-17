@@ -6,7 +6,7 @@ import { renderPlotBoundary, renderBrackets, renderBeams } from './meshFactory.j
 // Import the single initializer function
 import { initInteractionHandler, checkAllExistingBeamsForSquares } from './interactionInitializer.js';
 import { DEFAULT_PLOT_SIZE, CAMERA_STORAGE_KEY } from './constants.js';
-import * as THREE from "three";
+import * as THREE from 'three';
 import { addGroundBeamAndPanelVisuals } from './meshFactory.js'; // Import new function
 import toast from './toast.js'; // Import toast notifications
 
@@ -16,7 +16,7 @@ async function main() {
     const layoutId = window.currentLayoutId;
 
     if (!layoutId) {
-        console.error("No layout ID provided. Cannot initialize 3D view.");
+        console.error('No layout ID provided. Cannot initialize 3D view.');
         return;
     }
     if (!container) {
@@ -36,21 +36,21 @@ async function main() {
         try {
             const savedState = JSON.parse(savedStateJSON);
             if (savedState && savedState.position && savedState.target) {
-                console.log("Restoring camera state:", savedState);
+                console.log('Restoring camera state:', savedState);
                 camera.position.set(savedState.position.x, savedState.position.y, savedState.position.z);
                 controls.target.set(savedState.target.x, savedState.target.y, savedState.target.z);
                 // if (savedState.zoom) { camera.zoom = savedState.zoom; } // Restore zoom if saved
                 camera.updateProjectionMatrix(); // Needed after zoom change
                 controls.update(); // IMPORTANT: Update controls after changing target/position
             } else {
-                console.warn("Invalid camera state found in Local Storage.");
+                console.warn('Invalid camera state found in Local Storage.');
             }
         } catch (error) {
-            console.error("Error parsing saved camera state:", error);
+            console.error('Error parsing saved camera state:', error);
             localStorage.removeItem(CAMERA_STORAGE_KEY); // Clear invalid data
         }
     } else {
-        console.log("No saved camera state found.");
+        console.log('No saved camera state found.');
     }
 
 
@@ -59,7 +59,7 @@ async function main() {
     try {
         layoutData = await fetchLayoutData(layoutId);
     } catch (error) {
-        console.error("Failed to load layout data:", error);
+        console.error('Failed to load layout data:', error);
         toast.error(`Failed to load layout: ${error.message}. The application will continue with default settings.`, 6000);
     }
 
@@ -68,9 +68,9 @@ async function main() {
         const nameInput = document.getElementById('layout-name-input');
         const widthInput = document.getElementById('plot-width-input');
         const depthInput = document.getElementById('plot-depth-input');
-        if (nameInput) nameInput.value = layoutData.name || '';
-        if (widthInput) widthInput.value = layoutData.plot_width || '';
-        if (depthInput) depthInput.value = layoutData.plot_depth || '';
+        if (nameInput) {nameInput.value = layoutData.name || '';}
+        if (widthInput) {widthInput.value = layoutData.plot_width || '';}
+        if (depthInput) {depthInput.value = layoutData.plot_depth || '';}
     }
     // --- End Populate ---
 
@@ -92,7 +92,7 @@ async function main() {
     if(layoutData) {
         checkAllExistingBeamsForSquares();
         // --- NEW: Render initial panels ---
-        console.log("Checking for initial panels...");
+        console.log('Checking for initial panels...');
         layoutData.beams.forEach(beamData => {
             if (beamData.has_side_panel) {
                 const topBeamGroup = scene.getObjectByName(`beam_group_${beamData.id}`);
@@ -111,7 +111,7 @@ async function main() {
     // 6. Setup Resize Listener
     window.addEventListener('resize', () => onWindowResize(container, camera, renderer), false);
 
-    console.log("OKNOTOK Layout Viewer Initialized.");
+    console.log('OKNOTOK Layout Viewer Initialized.');
 }
 
 // --- Global Error Handler ---
@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         await main();
     } catch (error) {
-        console.error("Fatal error initializing application:", error);
+        console.error('Fatal error initializing application:', error);
         toast.error(`Failed to initialize the 3D viewer: ${error.message}. Please refresh the page or contact support.`, 0);
     }
 });

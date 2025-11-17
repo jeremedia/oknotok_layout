@@ -1,6 +1,6 @@
 // app/javascript/eventHandlers.js
 import * as THREE from 'three';
-import {getMode, setMode} from './modeManager.js';
+import {getMode} from './modeManager.js';
 import {selectObject, getSelectedObject, clearSelectionState} from './selectionManager.js';
 import {
     placeUpright,
@@ -13,7 +13,6 @@ import {
 import {addBracketMesh, addBeamMesh, removeMesh, renderPlotBoundary, addShadeClothMesh} from './meshFactory.js';
 import {
     CROSSBEAM_LENGTH,
-    UPRIGHT_HEIGHT,
     DEFAULT_PLOT_SIZE,
     CAMERA_STORAGE_KEY,
     MIN_PLOT_DIMENSION,
@@ -22,11 +21,11 @@ import {
     LENGTH_TOLERANCE
 } from './constants.js';
 import {pushUndoAction, undoLastAction, redoLastAction} from './undoManager.js';
-import {addGroundBeamAndPanelVisuals, removeGroundBeamAndPanelVisuals} from './meshFactory.js'; // Import new mesh functions
+import {addGroundBeamAndPanelVisuals} from './meshFactory.js'; // Import new mesh functions
 import {updateBeamFlag} from './apiClient.js'; // Import new API function
 import toast from './toast.js'; // Import toast notifications
 import { showButtonLoading } from './loadingIndicator.js'; // Import loading indicators
-import { highlightBracketSockets, unhighlightBracketSockets, clearAllSocketHighlights } from './socketHighlighter.js'; // Import socket highlighter
+import { highlightBracketSockets, unhighlightBracketSockets } from './socketHighlighter.js'; // Import socket highlighter
 
 // --- State ---
 let sceneRef, cameraRef, rendererRef, groundPlaneMeshRef, currentLayoutData, clockRef, controlsRef;
@@ -36,7 +35,7 @@ let lastHighlightedBracket = null; // Track last highlighted bracket for socket 
 
 // --- UI Handlers ---
 async function handleUpdateMetadata() {
-    if (!currentLayoutData) return;
+    if (!currentLayoutData) {return;}
     const nameInput = document.getElementById('layout-name-input');
     const widthInput = document.getElementById('plot-width-input');
     const depthInput = document.getElementById('plot-depth-input');
@@ -51,7 +50,7 @@ async function handleUpdateMetadata() {
         return;
     }
     if (!newName.trim()) {
-        toast.warning("Layout name cannot be empty.");
+        toast.warning('Layout name cannot be empty.');
         nameInput.value = currentLayoutData.name || '';
         return;
     }
@@ -64,9 +63,9 @@ async function handleUpdateMetadata() {
         currentLayoutData.plot_width = updatedLayout.plot_width;
         currentLayoutData.plot_depth = updatedLayout.plot_depth;
         renderPlotBoundary(currentLayoutData.plot_width, currentLayoutData.plot_depth, sceneRef);
-        toast.success("Layout info updated successfully!");
+        toast.success('Layout info updated successfully!');
     } catch (error) {
-        console.error("Failed to update layout metadata:", error);
+        console.error('Failed to update layout metadata:', error);
         toast.error(`Error updating layout: ${error.message}`);
         nameInput.value = currentLayoutData.name || '';
         widthInput.value = currentLayoutData.plot_width || '';
@@ -77,8 +76,8 @@ async function handleUpdateMetadata() {
 }
 
 async function handleClearLayout() {
-    if (!currentLayoutData) return;
-    if (!window.confirm("Are you sure you want to remove ALL brackets and beams from this layout? This cannot be undone easily.")) return;
+    if (!currentLayoutData) {return;}
+    if (!window.confirm('Are you sure you want to remove ALL brackets and beams from this layout? This cannot be undone easily.')) {return;}
     const clearButton = document.getElementById('btn-clear-layout');
     const hideLoading = showButtonLoading(clearButton, 'Clearing...');
     try {
@@ -97,9 +96,9 @@ async function handleClearLayout() {
         clearSelectionState();
         // TODO: Clear undo stack
         // pushUndoAction({ type: 'clear_layout', previousData: { brackets: [...], beams: [...] } }); // For undo if needed
-        toast.success("Layout cleared successfully!");
+        toast.success('Layout cleared successfully!');
     } catch (error) {
-        console.error("Failed to clear layout:", error);
+        console.error('Failed to clear layout:', error);
         toast.error(`Error clearing layout: ${error.message}`);
     } finally {
         hideLoading();
@@ -107,14 +106,14 @@ async function handleClearLayout() {
 }
 
 function handleNewLayout() {
-    if (window.confirm("Leave this page and create a new layout?")) {
+    if (window.confirm('Leave this page and create a new layout?')) {
         window.location.href = '/layouts'; // Adjust as needed
     }
 }
 
 // --- Helper Functions ---
 function isSocketAvailable(bracketId, socketName) {
-    if (!currentLayoutData || !currentLayoutData.beams) return true;
+    if (!currentLayoutData || !currentLayoutData.beams) {return true;}
     return !currentLayoutData.beams.some(beam =>
         (beam.start_bracket_id === bracketId && beam.start_socket === socketName) ||
         (beam.end_bracket_id === bracketId && beam.end_socket === socketName)
@@ -164,7 +163,7 @@ function calculateNewBracketPosition(startBracketGroup, socketName) {
 }
 
 function findExistingBracketNear(targetPosition, tolerance = POSITION_TOLERANCE) {
-    if (!currentLayoutData || !currentLayoutData.brackets) return null;
+    if (!currentLayoutData || !currentLayoutData.brackets) {return null;}
     for (const bracket of currentLayoutData.brackets) {
         const distance = targetPosition.distanceTo(new THREE.Vector3(bracket.x, bracket.y, bracket.z));
         if (distance < tolerance && Math.abs(targetPosition.y - bracket.y) < tolerance) {
@@ -206,7 +205,7 @@ function findExistingBracketNear(targetPosition, tolerance = POSITION_TOLERANCE)
 function checkForCompletedSquares(triggerBeamData) {
     console.log(`Checking for squares triggered by beam: ${triggerBeamData?.id}`);
     if (!currentLayoutData || !currentLayoutData.brackets || !currentLayoutData.beams || triggerBeamData.beam_type !== 'crossbeam') {
-        console.log(" -> Check aborted: Invalid data or not a crossbeam.");
+        console.log(' -> Check aborted: Invalid data or not a crossbeam.');
         return;
     }
 
@@ -294,7 +293,7 @@ function checkForCompletedSquares(triggerBeamData) {
                 addShadeClothMesh([bA_id, bB_id, bC_id, bD_id], sceneRef, clockRef);
                 // collect the four bracket positions and return them as an array
                 const bracketPositions = [bA, bB, bC, bD].map(b => new THREE.Vector3(b.x, b.y, b.z));
-                console.log("          -> Completed square found with brackets:", bracketPositions);
+                console.log('          -> Completed square found with brackets:', bracketPositions);
                 return bracketPositions; // Stop searching
             } else {
                 // console.log(`          -> Closing beam between ${bC_id} and ${bD_id} not found.`);
@@ -305,9 +304,9 @@ function checkForCompletedSquares(triggerBeamData) {
     // console.log(` -> No completed squares found involving beam ${triggerBeamData.id}.`);
 }// --- Main Click Handler ---
 async function onMouseClick(event) {
-    if (isSpacebarDown) return; // Ignore clicks when orbiting temporarily
+    if (isSpacebarDown) {return;} // Ignore clicks when orbiting temporarily
     const currentAppMode = getMode();
-    if (currentAppMode === 'view' || !sceneRef || !cameraRef || !rendererRef || !groundPlaneMeshRef || !currentLayoutData) return;
+    if (currentAppMode === 'view' || !sceneRef || !cameraRef || !rendererRef || !groundPlaneMeshRef || !currentLayoutData) {return;}
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
@@ -322,7 +321,7 @@ async function onMouseClick(event) {
     let clickedObjectGroup = null;
     let clickedSocketName = null;
     if (intersects.length > 0) {
-        let intersectedMesh = intersects[0].object;
+        const intersectedMesh = intersects[0].object;
         clickedObjectGroup = intersectedMesh;
         while (clickedObjectGroup.parent && clickedObjectGroup.parent !== sceneRef) {
             clickedObjectGroup = clickedObjectGroup.parent;
@@ -348,7 +347,7 @@ async function onMouseClick(event) {
                 }
                 const targetPos = calculateNewBracketPosition(startBracketGroup, clickedSocketName);
                 if (!targetPos) {
-                    toast.warning("Invalid socket direction.");
+                    toast.warning('Invalid socket direction.');
                     return;
                 }
                 const existingBracketData = findExistingBracketNear(targetPos);
@@ -363,23 +362,23 @@ async function onMouseClick(event) {
                     }
                     try {
                         const {newBeam: newCrossbeam} = await placeCrossbeam(currentLayoutData.id, {id: startBracketId}, {id: endBracketId}, clickedSocketName, endSocketName);
-                        if (!currentLayoutData.beams) currentLayoutData.beams = [];
+                        if (!currentLayoutData.beams) {currentLayoutData.beams = [];}
                         currentLayoutData.beams.push(newCrossbeam);
                         addBeamMesh(newCrossbeam, sceneRef, clockRef);
                         pushUndoAction({type: 'create_crossbeam', created: {beamId: newCrossbeam.id}});
                         checkForCompletedSquares(newCrossbeam);
                     } catch (error) {
-                        console.error("Failed connection:", error);
+                        console.error('Failed connection:', error);
                         toast.error(`Error: ${error.message}`);
                     }
                 } else {
-                    console.log(`Creating new structure from socket.`);
+                    console.log('Creating new structure from socket.');
                     const plotW = currentLayoutData?.plot_width || DEFAULT_PLOT_SIZE;
                     const plotD = currentLayoutData?.plot_depth || DEFAULT_PLOT_SIZE;
                     const halfW = plotW / 2;
                     const halfD = plotD / 2;
                     if (targetPos.x < -halfW || targetPos.x > halfW || targetPos.z < -halfD || targetPos.z > halfD) {
-                        toast.warning("New bracket outside boundary.");
+                        toast.warning('New bracket outside boundary.');
                         return;
                     }
                     try {
@@ -389,8 +388,8 @@ async function onMouseClick(event) {
                         } = await placeUpright(currentLayoutData.id, targetPos.x, targetPos.z);
                         const endSocketName = getOppositeSocket(clickedSocketName);
                         const {newBeam: newCrossbeam} = await placeCrossbeam(currentLayoutData.id, {id: startBracketId}, {id: newBracket.id}, clickedSocketName, endSocketName);
-                        if (!currentLayoutData.brackets) currentLayoutData.brackets = [];
-                        if (!currentLayoutData.beams) currentLayoutData.beams = [];
+                        if (!currentLayoutData.brackets) {currentLayoutData.brackets = [];}
+                        if (!currentLayoutData.beams) {currentLayoutData.beams = [];}
                         currentLayoutData.brackets.push(newBracket);
                         currentLayoutData.beams.push(newUprightBeam);
                         currentLayoutData.beams.push(newCrossbeam);
@@ -407,7 +406,7 @@ async function onMouseClick(event) {
                         });
                         checkForCompletedSquares(newCrossbeam);
                     } catch (error) {
-                        console.error("Auto-creation failed:", error);
+                        console.error('Auto-creation failed:', error);
                         toast.error(`Error: ${error.message}`);
                     }
                 }
@@ -419,11 +418,11 @@ async function onMouseClick(event) {
                 const topBeamData = currentLayoutData.beams.find(b => b.id === topBeamId);
 
                 if (!topBeamData) {
-                    console.error("Cannot find data for clicked beam.");
+                    console.error('Cannot find data for clicked beam.');
                     return;
                 }
                 if (topBeamData.has_side_panel) {
-                    toast.info("Panel already exists for this beam.");
+                    toast.info('Panel already exists for this beam.');
                     return;
                 }
 
@@ -433,22 +432,22 @@ async function onMouseClick(event) {
                 // TODO: Add more robust checks here based on square completion and socket availability
 
 
-                console.warn("Panel creation checks are simplified.");
+                console.warn('Panel creation checks are simplified.');
 
                 // --- Update Flag via API ---
                 clearSelectionState();
                 try {
-                    const updatedBeam = await updateBeamFlag(topBeamId, {has_side_panel: true});
+                    const _updatedBeam = await updateBeamFlag(topBeamId, {has_side_panel: true});
                     // Update client data
                     const beamIndex = currentLayoutData.beams.findIndex(b => b.id === topBeamId);
-                    if (beamIndex > -1) currentLayoutData.beams[beamIndex].has_side_panel = true;
+                    if (beamIndex > -1) {currentLayoutData.beams[beamIndex].has_side_panel = true;}
                     // Add visuals
                     const squareBracketPositions = checkForCompletedSquares(topBeamData);
                     addGroundBeamAndPanelVisuals(topBeamGroup, sceneRef, clockRef, squareBracketPositions);
                     // TODO: Add Undo Action
                     // pushUndoAction({ type: 'add_panel', beamId: topBeamId });
                 } catch (error) {
-                    console.error("Failed to add panel:", error);
+                    console.error('Failed to add panel:', error);
                     toast.error(`Error adding panel: ${error.message}`);
                 }
 
@@ -473,8 +472,8 @@ async function onMouseClick(event) {
                     clearSelectionState();
                     try {
                         const {newBracket, newBeam} = await placeUpright(currentLayoutData.id, targetX, targetZ);
-                        if (!currentLayoutData.brackets) currentLayoutData.brackets = [];
-                        if (!currentLayoutData.beams) currentLayoutData.beams = [];
+                        if (!currentLayoutData.brackets) {currentLayoutData.brackets = [];}
+                        if (!currentLayoutData.beams) {currentLayoutData.beams = [];}
                         currentLayoutData.brackets.push(newBracket);
                         currentLayoutData.beams.push(newBeam);
                         addBracketMesh(newBracket, sceneRef, clockRef);
@@ -484,11 +483,11 @@ async function onMouseClick(event) {
                             created: {bracketId: newBracket.id, beamId: newBeam.id}
                         });
                     } catch (error) {
-                        console.error("Failed upright:", error);
+                        console.error('Failed upright:', error);
                         toast.error(`Error: ${error.message}`);
                     }
                 } else {
-                    console.log("Ground click outside boundary.");
+                    console.log('Ground click outside boundary.');
                     clearSelectionState();
                 }
             } else {
@@ -506,21 +505,21 @@ async function onActionKeysDown(event) {
     // --- Redo ---
     if ((event.ctrlKey || event.metaKey) && (event.key === 'y' || (event.shiftKey && event.key === 'z'))) {
         event.preventDefault();
-        console.log("Redo triggered.");
+        console.log('Redo triggered.');
         await redoLastAction();
         return;
     }
     // --- Undo ---
     if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
         event.preventDefault();
-        console.log("Undo triggered.");
+        console.log('Undo triggered.');
         await undoLastAction();
         return;
     }
     // --- Escape ---
     if (event.key === 'Escape') {
         event.preventDefault();
-        console.log("Escape pressed, clearing selection state.");
+        console.log('Escape pressed, clearing selection state.');
         clearSelectionState();
         return;
     }
@@ -538,16 +537,16 @@ async function onActionKeysDown(event) {
     const objectId = objectToDelete.userData.id;
 
     // --- Gather Data & Find Associated Items for Removal/Undo ---
-    let undoAction = {type: `delete_${objectType === 'bracket' ? 'bracket_with_cascade' : 'beam'}`};
-    let itemsToRemove = { // Store groups/meshes to remove visually
+    const undoAction = {type: `delete_${objectType === 'bracket' ? 'bracket_with_cascade' : 'beam'}`};
+    const itemsToRemove = { // Store groups/meshes to remove visually
         beams: [], footers: [], shadeCloths: []
     };
-    let beamIdsToRemoveFromData = []; // Store IDs for client data update
+    const beamIdsToRemoveFromData = []; // Store IDs for client data update
 
     if (objectType === 'bracket') {
         const bracketData = currentLayoutData.brackets.find(b => b.id === objectId);
         if (!bracketData) {
-            console.error("Cannot find bracket data for undo.");
+            console.error('Cannot find bracket data for undo.');
             return;
         }
         undoAction.deleted = {bracketData: {...bracketData}, beamsData: []};
@@ -559,10 +558,10 @@ async function onActionKeysDown(event) {
                     itemsToRemove.beams.push(childGroup);
                     beamIdsToRemoveFromData.push(childGroup.userData.id);
                     const beamData = currentLayoutData.beams.find(b => b.id === childGroup.userData.id);
-                    if (beamData) undoAction.deleted.beamsData.push({...beamData});
+                    if (beamData) {undoAction.deleted.beamsData.push({...beamData});}
                     if (childGroup.userData.isGrounded) {
                         const footer = sceneRef.getObjectByName(`footer_group_${childGroup.userData.id}`);
-                        if (footer) itemsToRemove.footers.push(footer);
+                        if (footer) {itemsToRemove.footers.push(footer);}
                     }
                 }
             }
@@ -577,7 +576,7 @@ async function onActionKeysDown(event) {
     } else if (objectType === 'beam_group') {
         const beamData = currentLayoutData.beams.find(b => b.id === objectId);
         if (!beamData) {
-            console.error("Cannot find beam data for undo.");
+            console.error('Cannot find beam data for undo.');
             return;
         }
         beamIdsToRemoveFromData.push(objectId);
@@ -585,12 +584,12 @@ async function onActionKeysDown(event) {
             undoAction.type = 'delete_upright';
             const bracketData = currentLayoutData.brackets.find(b => b.id === beamData.start_bracket_id);
             if (!bracketData) {
-                console.error("Cannot find bracket data for upright undo.");
+                console.error('Cannot find bracket data for upright undo.');
                 return;
             }
             undoAction.deleted = {beamData: {...beamData}, bracketData: {...bracketData}};
             const footer = sceneRef.getObjectByName(`footer_group_${objectId}`);
-            if (footer) itemsToRemove.footers.push(footer);
+            if (footer) {itemsToRemove.footers.push(footer);}
         } else { // It's a crossbeam
             undoAction.deleted = {beamData: {...beamData}};
             // Find associated shade cloths
@@ -662,7 +661,7 @@ function onMouseMove(event) {
         return;
     }
 
-    if (!rendererRef || !cameraRef || !sceneRef) return;
+    if (!rendererRef || !cameraRef || !sceneRef) {return;}
 
     // Calculate mouse position in normalized device coordinates (-1 to +1)
     const rect = rendererRef.domElement.getBoundingClientRect();
@@ -723,18 +722,18 @@ function onMouseMove(event) {
 
 // --- Spacebar Handlers ---
 function onSpacebarDown(event) {
-    if (event.code !== 'Space' || isSpacebarDown || getMode() === 'view') return;
+    if (event.code !== 'Space' || isSpacebarDown || getMode() === 'view') {return;}
     event.preventDefault();
     isSpacebarDown = true;
     modeBeforeSpacebar = getMode();
-    if (controlsRef) controlsRef.enabled = true;
+    if (controlsRef) {controlsRef.enabled = true;}
     const container = document.getElementById('threejs-container');
-    if (container) container.style.cursor = 'grab';
-    console.log("Spacebar down: Orbit enabled temporarily.");
+    if (container) {container.style.cursor = 'grab';}
+    console.log('Spacebar down: Orbit enabled temporarily.');
 }
 
 function onSpacebarUp(event) {
-    if (event.code !== 'Space' || !isSpacebarDown) return;
+    if (event.code !== 'Space' || !isSpacebarDown) {return;}
     event.preventDefault();
     isSpacebarDown = false;
     if (controlsRef && modeBeforeSpacebar && modeBeforeSpacebar !== 'view') {
@@ -742,28 +741,27 @@ function onSpacebarUp(event) {
     } else if (controlsRef) {
         controlsRef.enabled = true;
     } // Ensure enabled if in view mode
-    const currentAppMode = getMode();
     const container = document.getElementById('threejs-container');
     if (container) { /* ... restore cursor ... */
     }
     modeBeforeSpacebar = null;
-    console.log("Spacebar up: Orbit controls reverted.");
+    console.log('Spacebar up: Orbit controls reverted.');
 }
 
 function resetSpacebarOverride() {
     isSpacebarDown = false;
     modeBeforeSpacebar = null;
-    console.log("Spacebar override state reset.");
+    console.log('Spacebar override state reset.');
 }
 
 // --- Save Camera State ---
 function saveCameraState() {
-    if (!cameraRef || !controlsRef) return;
+    if (!cameraRef || !controlsRef) {return;}
     try {
         const cameraState = {position: cameraRef.position.clone(), target: controlsRef.target.clone()};
         localStorage.setItem(CAMERA_STORAGE_KEY, JSON.stringify(cameraState));
     } catch (error) {
-        console.error("Error saving camera state:", error);
+        console.error('Error saving camera state:', error);
     }
 }
 
@@ -779,15 +777,14 @@ function setHandlerReferences(scene, camera, renderer, groundPlane, layoutData, 
 }
 
 function checkAllExistingBeamsForSquares() {
-    console.log("Checking all initially loaded beams for completed squares...");
+    console.log('Checking all initially loaded beams for completed squares...');
     if (!currentLayoutData || !currentLayoutData.beams) {
-        console.log(" -> No beams data available for initial check.");
+        console.log(' -> No beams data available for initial check.');
         return;
     }
     // Avoid duplicate checks by checking if cloth exists before adding
     // The addShadeClothMesh function already does this with getObjectByName
 
-    let squaresFound = 0;
     currentLayoutData.beams.forEach(beam => {
         if (beam.beam_type === 'crossbeam') {
             // Call the existing check function for each crossbeam
@@ -798,7 +795,7 @@ function checkAllExistingBeamsForSquares() {
             // Note: A more optimized approach might store found squares, but this works.
         }
     });
-    console.log("Initial square check complete."); // Log completion
+    console.log('Initial square check complete.'); // Log completion
 }
 
 // --- Exports ---

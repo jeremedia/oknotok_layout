@@ -64,8 +64,8 @@ function setupScene(container) {
     });
 
     // 6. Basic Helpers
-    const axesHelper = new THREE.AxesHelper(10); // Shows X(red), Y(green), Z(blue) axes
-    // scene.add(axesHelper);
+    // const _axesHelper = new THREE.AxesHelper(10); // Shows X(red), Y(green), Z(blue) axes
+    // scene.add(_axesHelper);
 
     // 7. Ground Plane (for raycasting)
     const groundGeometry = new THREE.PlaneGeometry(2000, 2000); // Make it very large
@@ -77,10 +77,10 @@ function setupScene(container) {
     groundPlaneMesh = new THREE.Mesh(groundGeometry, groundMaterial);
     groundPlaneMesh.rotation.x = -Math.PI / 2; // Rotate to lie flat on XZ plane
     groundPlaneMesh.position.y = 0;
-    groundPlaneMesh.name = "groundPlane";
+    groundPlaneMesh.name = 'groundPlane';
     scene.add(groundPlaneMesh);
 
-    console.log("Scene setup complete.");
+    console.log('Scene setup complete.');
     // Return the core components needed by other modules
     return { scene, camera, renderer, controls, groundPlaneMesh };
 }
@@ -102,8 +102,8 @@ function requestRender() {
  * Checks if there are any active animations in the scene.
  * @returns {boolean} True if animations are running
  */
-function hasActiveAnimations() {
-    if (!scene) return false;
+function _hasActiveAnimations() {
+    if (!scene) {return false;}
 
     let hasAnimation = false;
     scene.children.forEach(child => {
@@ -132,7 +132,7 @@ function animate() {
                 const targetScale = child.userData.targetScale;
 
                 const timeInAnimation = elapsedTime - startTime;
-                let progress = Math.min(timeInAnimation / duration, 1.0);
+                const progress = Math.min(timeInAnimation / duration, 1.0);
                 const easedProgress = easeOutCubic(progress);
 
                 // Interpolate scale
@@ -158,7 +158,7 @@ function animate() {
     // Update controls if enabled (damping requires continuous updates)
     if (controls && controls.enabled) {
         const controlsChanged = controls.update();
-        if (controlsChanged) sceneChanged = true;
+        if (controlsChanged) {sceneChanged = true;}
     }
 
     // Only render if something changed

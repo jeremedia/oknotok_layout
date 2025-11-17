@@ -21,7 +21,7 @@ const debugLineMaterial = new THREE.LineBasicMaterial({
 
 function createDebugCursorLines() {
     if (!sceneRef) {
-        console.error("Scene reference not set for debug cursor.");
+        console.error('Scene reference not set for debug cursor.');
         return;
     }
     const pointsH = [new THREE.Vector3(-DEBUG_LINE_LENGTH / 2, 0, 0), new THREE.Vector3(DEBUG_LINE_LENGTH / 2, 0, 0)];
@@ -34,16 +34,16 @@ function createDebugCursorLines() {
     debugCursorLines = new THREE.Group();
     debugCursorLines.add(lineH);
     debugCursorLines.add(lineV);
-    debugCursorLines.name = "debugCursor";
+    debugCursorLines.name = 'debugCursor';
     debugCursorLines.visible = false;
     debugCursorLines.renderOrder = DEBUG_CURSOR_RENDER_ORDER;
     sceneRef.add(debugCursorLines);
-    console.log("Debug cursor created.");
+    console.log('Debug cursor created.');
 }
 
 function updateDebugCursorPosition(event) {
     if (!isDebugCursorActive || !debugCursorLines || !rendererRef || !cameraRef || !groundPlaneMeshRef) {
-        if (debugCursorLines) debugCursorLines.visible = false;
+        if (debugCursorLines) {debugCursorLines.visible = false;}
         return;
     }
     const raycaster = new THREE.Raycaster();
@@ -68,7 +68,7 @@ function toggleDebugCursor(isActive) {
     isDebugCursorActive = isActive;
     if (debugCursorLines) {
         debugCursorLines.visible = isDebugCursorActive;
-        if (!isActive) debugCursorLines.position.set(0, DEBUG_CURSOR_HEIGHT, 0);
+        if (!isActive) {debugCursorLines.position.set(0, DEBUG_CURSOR_HEIGHT, 0);}
     }
     console.log(`Debug cursor active: ${isDebugCursorActive}`);
 }
