@@ -5,6 +5,7 @@
 //
 
 import toast from './toast.js';
+import { rateLimitLog } from './environment.js';
 
 /**
  * Rate limiter configuration per endpoint pattern.
@@ -164,7 +165,7 @@ export function recordRequest(method, url) {
 export function resetRateLimit(method, url) {
     const endpointKey = normalizeEndpoint(method, url);
     requestTimestamps.delete(endpointKey);
-    console.log(`Rate limit reset for ${endpointKey}`);
+    rateLimitLog(`Rate limit reset for ${endpointKey}`);
 }
 
 /**
@@ -173,7 +174,7 @@ export function resetRateLimit(method, url) {
  */
 export function resetAllRateLimits() {
     requestTimestamps.clear();
-    console.log('All rate limits reset');
+    rateLimitLog('All rate limits reset');
 }
 
 /**
@@ -213,7 +214,7 @@ export async function withRateLimit(method, url, asyncFn) {
 
     if (!result.allowed) {
         toast.warning(result.reason, 3000);
-        console.warn(`Rate limit exceeded: ${result.reason}`);
+        rateLimitLog(`Rate limit exceeded: ${result.reason}`);
         return null;
     }
 

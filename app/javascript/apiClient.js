@@ -2,6 +2,7 @@
 import { UPRIGHT_HEIGHT, CROSSBEAM_LENGTH } from './constants.js';
 import { checkRateLimit } from './rateLimiter.js';
 import toast from './toast.js';
+import { apiLog } from './environment.js';
 
 // Helper for POST/PUT/PATCH/DELETE requests
 async function sendRequest(url = '', method = 'POST', data = {}) {
@@ -58,7 +59,7 @@ async function sendRequest(url = '', method = 'POST', data = {}) {
 
 // Specific API functions
 async function fetchLayoutData(layoutId) {
-    console.log(`Fetching data for layout ${layoutId}`);
+    apiLog(`Fetching data for layout ${layoutId}`);
 
     const url = `/api/v1/layouts/${layoutId}`;
 
@@ -80,12 +81,12 @@ async function fetchLayoutData(layoutId) {
         throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    console.log('Fetched Layout Data:', data);
+    apiLog('Fetched Layout Data:', data);
     return data;
 }
 
 async function placeUpright(layoutId, x, z) {
-    console.log(`API: Placing upright at (${x}, ${z}) for layout ${layoutId}`);
+    apiLog(`API: Placing upright at (${x}, ${z}) for layout ${layoutId}`);
     // 1. Create Bracket
     const bracketPayload = { bracket: { x: x, y: UPRIGHT_HEIGHT, z: z } };
     const newBracket = await sendRequest(`/api/v1/layouts/${layoutId}/brackets`, 'POST', bracketPayload);
@@ -103,13 +104,13 @@ async function placeUpright(layoutId, x, z) {
     };
     const newBeam = await sendRequest(`/api/v1/layouts/${layoutId}/beams`, 'POST', beamPayload);
 
-    console.log('API: Upright placed successfully.', { newBracket, newBeam });
+    apiLog('API: Upright placed successfully.', { newBracket, newBeam });
     // Return data for scene update
     return { newBracket, newBeam };
 }
 
 async function placeCrossbeam(layoutId, bracket1Data, bracket2Data, startSocket, endSocket) {
-    console.log(`API: Placing crossbeam between ${bracket1Data.id} and ${bracket2Data.id}`);
+    apiLog(`API: Placing crossbeam between ${bracket1Data.id} and ${bracket2Data.id}`);
     const beamPayload = {
         beam: {
             beam_type: 'crossbeam',
@@ -122,45 +123,45 @@ async function placeCrossbeam(layoutId, bracket1Data, bracket2Data, startSocket,
     };
     const newBeam = await sendRequest(`/api/v1/layouts/${layoutId}/beams`, 'POST', beamPayload);
 
-    console.log('API: Crossbeam placed successfully.', { newBeam });
+    apiLog('API: Crossbeam placed successfully.', { newBeam });
     // Return data for scene update
     return { newBeam };
 }
 
 
 async function deleteBracket(bracketId) {
-    console.log(`API: Deleting bracket ${bracketId}`);
+    apiLog(`API: Deleting bracket ${bracketId}`);
     // sendRequest handles 204 No Content automatically
     await sendRequest(`/api/v1/brackets/${bracketId}`, 'DELETE');
-    console.log(`API: Bracket ${bracketId} deleted.`);
+    apiLog(`API: Bracket ${bracketId} deleted.`);
 }
 
 async function deleteBeam(beamId) {
-    console.log(`API: Deleting beam ${beamId}`);
+    apiLog(`API: Deleting beam ${beamId}`);
     await sendRequest(`/api/v1/beams/${beamId}`, 'DELETE');
-    console.log(`API: Beam ${beamId} deleted.`);
+    apiLog(`API: Beam ${beamId} deleted.`);
 }
 
 async function updateLayoutMetadata(layoutId, metadata) {
-    console.log(`API: Updating metadata for layout ${layoutId}`, metadata);
+    apiLog(`API: Updating metadata for layout ${layoutId}`, metadata);
     // Use PATCH for partial update
     const updatedLayout = await sendRequest(`/api/v1/layouts/${layoutId}`, 'PATCH', { layout: metadata });
-    console.log('API: Layout metadata updated.', updatedLayout);
+    apiLog('API: Layout metadata updated.', updatedLayout);
     return updatedLayout; // Return updated layout data
 }
 
 async function clearLayoutContents(layoutId) {
-    console.log(`API: Clearing contents for layout ${layoutId}`);
+    apiLog(`API: Clearing contents for layout ${layoutId}`);
     // Use a custom DELETE route
     await sendRequest(`/api/v1/layouts/${layoutId}/clear`, 'DELETE');
-    console.log(`API: Layout ${layoutId} contents cleared.`);
+    apiLog(`API: Layout ${layoutId} contents cleared.`);
 }
 
 async function updateBeamFlag(beamId, flags) {
-    console.log(`API: Updating flags for beam ${beamId}`, flags);
+    apiLog(`API: Updating flags for beam ${beamId}`, flags);
     // flags should be like { has_side_panel: true } or { has_side_panel: false }
     const updatedBeam = await sendRequest(`/api/v1/beams/${beamId}`, 'PATCH', { beam: flags });
-    console.log('API: Beam flags updated.', updatedBeam);
+    apiLog('API: Beam flags updated.', updatedBeam);
     return updatedBeam;
 }
 
