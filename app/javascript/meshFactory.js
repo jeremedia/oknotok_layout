@@ -21,6 +21,7 @@ import {
     GROUND_PLANE_VERTICES_HEIGHT
 } from './constants.js';
 import { checkForCompletedSquares}  from "./eventHandlers";
+import { requestRender } from "./sceneSetup.js";
 
 // --- Reusable Meshes/Materials (Shared Resources - DO NOT DISPOSE) ---
 // These are reused across many objects for performance. They are marked as shared
@@ -126,6 +127,7 @@ function addBracketMesh(bracketData, scene, clock) { // Pass clock instance
     bracketGroup.scale.set(INITIAL_SCALE, INITIAL_SCALE, INITIAL_SCALE);
 
     scene.add(bracketGroup);
+    requestRender(); // Request render for new object
     console.log(`Creating bracket mesh ${bracketData.id} with scale animation.`);
 
     return bracketGroup;
@@ -207,6 +209,7 @@ function addBeamMesh(beamData, scene, clock) {
             footerGroup.add(socketMesh);
 
             scene.add(footerGroup);
+            requestRender(); // Request render for new footer
             console.log(`Creating footer group ${footerGroupName}`);
         }
         // --- End Footer Creation ---
@@ -240,6 +243,7 @@ function addBeamMesh(beamData, scene, clock) {
     beamGroup.add(beamMesh);
     beamGroup.scale.set(INITIAL_SCALE, INITIAL_SCALE, INITIAL_SCALE); // Apply initial scale for animation
     scene.add(beamGroup);
+    requestRender(); // Request render for new object
     console.log(`Creating ${beamData.beam_type} group ${beamData.id} (vis length ${visibleLength.toFixed(1)})`);
     return beamGroup;
 }
@@ -312,6 +316,7 @@ function addShadeClothMesh(bracketIds, scene, clock) { // Pass clock
     // Or maybe just X and Z: shadeClothMesh.scale.set(INITIAL_SCALE, 1.0, INITIAL_SCALE);
 
     scene.add(shadeClothMesh);
+    requestRender(); // Request render for new object
     console.log(`Created ${shadeClothName} with scale animation.`);
     return shadeClothMesh;
 }
@@ -320,9 +325,15 @@ function renderPlotBoundary(width, depth, scene) {
     if (!scene) return;
     // Remove existing boundary/grid if any
     const existingBoundary = scene.getObjectByName("plotBoundary");
-    if (existingBoundary) scene.remove(existingBoundary);
+    if (existingBoundary) {
+        scene.remove(existingBoundary);
+        requestRender(); // Request render for boundary removal
+    }
     const existingGrid = scene.getObjectByName("plotGrid");
-    if (existingGrid) scene.remove(existingGrid);
+    if (existingGrid) {
+        scene.remove(existingGrid);
+        requestRender(); // Request render for grid removal
+    }
 
     const w = width || DEFAULT_PLOT_SIZE;
     const d = depth || DEFAULT_PLOT_SIZE;
@@ -347,6 +358,7 @@ function renderPlotBoundary(width, depth, scene) {
     boundary.name = "plotBoundary";
     boundary.position.y = BOUNDARY_LINE_HEIGHT; // Slightly above ground plane
     scene.add(boundary);
+    requestRender(); // Request render for boundary update
     console.log(`Rendered plot boundary: ${w}x${d}`);
 
     // Draw boundary box (optional)
@@ -356,6 +368,7 @@ function renderPlotBoundary(width, depth, scene) {
     boxMesh.name = "plotBoundaryBox";
     boxMesh.position.set(0, BOUNDARY_BOX_HEIGHT, 0); // Centered
     scene.add(boxMesh);
+    requestRender(); // Request render for boundary box
 }
 
 
@@ -430,6 +443,7 @@ function removeMesh(objectToRemove, scene) {
 
     // Remove the main object (group or mesh) from the scene
     scene.remove(objectToRemove);
+    requestRender(); // Request render for object removal
 
     // Break parent link to help garbage collection
     objectToRemove.parent = null;

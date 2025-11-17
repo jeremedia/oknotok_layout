@@ -19,6 +19,10 @@ import {
 let scene, camera, renderer, controls, groundPlaneMesh;
 const clock = new THREE.Clock(); // Instantiate clock globally or near animate
 
+// Rendering optimization state
+let needsRender = true; // Start with true to render initial frame
+let animationFrameId = null;
+
 function setupScene(container) {
     // 1. Scene
     scene = new THREE.Scene();
@@ -54,6 +58,11 @@ function setupScene(container) {
     controls.minDistance = 2;
     controls.maxDistance = 500; // Allow zooming out further
 
+    // Request render when controls change
+    controls.addEventListener('change', () => {
+        needsRender = true;
+    });
+
     // 6. Basic Helpers
     const axesHelper = new THREE.AxesHelper(10); // Shows X(red), Y(green), Z(blue) axes
     // scene.add(axesHelper);
@@ -81,12 +90,37 @@ function easeOutCubic(t) {
     return (--t) * t * t + 1;
 }
 
+/**
+ * Requests a render on the next animation frame.
+ * Call this when you add/remove objects or change the scene.
+ */
+function requestRender() {
+    needsRender = true;
+}
+
+/**
+ * Checks if there are any active animations in the scene.
+ * @returns {boolean} True if animations are running
+ */
+function hasActiveAnimations() {
+    if (!scene) return false;
+
+    let hasAnimation = false;
+    scene.children.forEach(child => {
+        if ((child.isGroup || child.isMesh) && child.userData.isAnimatingScale) {
+            hasAnimation = true;
+        }
+    });
+    return hasAnimation;
+}
+
 // Animation loop needs access to renderer, scene, camera
-// --- Animation loop ---
+// --- Optimized Animation loop ---
 function animate() {
-    requestAnimationFrame(animate); // Keep the loop going
+    animationFrameId = requestAnimationFrame(animate); // Keep the loop going
 
     const elapsedTime = clock.getElapsedTime(); // Get total time elapsed
+    let sceneChanged = false;
 
     // --- Scale Animation Logic ---
     if (scene) {
@@ -108,6 +142,8 @@ function animate() {
                 // For simplicity, scale uniformly first. Adjust if Plane looks weird.
                 child.scale.set(currentScale, currentScale, currentScale);
 
+                sceneChanged = true; // Animation is active, need to render
+
                 // Check completion
                 if (progress >= FINAL_SCALE) {
                     child.scale.set(targetScale, targetScale, targetScale); // Ensure final scale
@@ -119,10 +155,30 @@ function animate() {
 
     // --- End Scale Animation Logic ---
 
+    // Update controls if enabled (damping requires continuous updates)
+    if (controls && controls.enabled) {
+        const controlsChanged = controls.update();
+        if (controlsChanged) sceneChanged = true;
+    }
 
-    if (controls) controls.update(); // Update orbit controls if damping enabled
+    // Only render if something changed
+    if (needsRender || sceneChanged) {
+        if (renderer && scene && camera) {
+            renderer.render(scene, camera);
+        }
+        needsRender = false;
+    }
+}
 
-    if (renderer && scene && camera) renderer.render(scene, camera); // Render the scene
+/**
+ * Stops the animation loop to save resources.
+ * Useful for cleanup or when the viewer is hidden.
+ */
+function stopAnimation() {
+    if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+    }
 }
 
 
@@ -135,4 +191,4 @@ function onWindowResize(container, camera, renderer) {
     }
 }
 
-export { setupScene, animate, onWindowResize };
+export { setupScene, animate, onWindowResize, requestRender, stopAnimation };
