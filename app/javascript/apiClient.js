@@ -1,8 +1,23 @@
 // app/javascript/apiClient.js
 import { UPRIGHT_HEIGHT, CROSSBEAM_LENGTH } from './constants.js';
+import { checkRateLimit } from './rateLimiter.js';
+import toast from './toast.js';
 
 // Helper for POST/PUT/PATCH/DELETE requests
 async function sendRequest(url = '', method = 'POST', data = {}) {
+    // Check rate limit before making request
+    const rateLimitCheck = checkRateLimit(method, url);
+
+    if (!rateLimitCheck.allowed) {
+        console.warn(`Rate limit exceeded: ${rateLimitCheck.reason}`);
+        toast.warning(rateLimitCheck.reason, 3000);
+
+        // Throw error to prevent request
+        const error = new Error('Rate limit exceeded');
+        error.rateLimitExceeded = true;
+        error.retryAfterMs = rateLimitCheck.retryAfterMs;
+        throw error;
+    }
     const headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -44,8 +59,23 @@ async function sendRequest(url = '', method = 'POST', data = {}) {
 // Specific API functions
 async function fetchLayoutData(layoutId) {
     console.log(`Fetching data for layout ${layoutId}`);
+
+    const url = `/api/v1/layouts/${layoutId}`;
+
+    // Check rate limit for GET request
+    const rateLimitCheck = checkRateLimit('GET', url);
+    if (!rateLimitCheck.allowed) {
+        console.warn(`Rate limit exceeded: ${rateLimitCheck.reason}`);
+        toast.warning(rateLimitCheck.reason, 3000);
+
+        const error = new Error('Rate limit exceeded');
+        error.rateLimitExceeded = true;
+        error.retryAfterMs = rateLimitCheck.retryAfterMs;
+        throw error;
+    }
+
     // Assuming GET request doesn't need CSRF token usually
-    const response = await fetch(`/api/v1/layouts/${layoutId}`);
+    const response = await fetch(url);
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
     }
