@@ -15,6 +15,7 @@ import {
     AMBIENT_LIGHT_INTENSITY,
     DIRECTIONAL_LIGHT_INTENSITY
 } from './constants.js';
+import { updateFPS, recordRender, getConfig } from './performanceMonitor.js';
 
 let scene, camera, renderer, controls, groundPlaneMesh;
 const clock = new THREE.Clock(); // Instantiate clock globally or near animate
@@ -119,6 +120,11 @@ function _hasActiveAnimations() {
 function animate() {
     animationFrameId = requestAnimationFrame(animate); // Keep the loop going
 
+    // Update FPS metrics if enabled
+    if (getConfig('enablePerformanceLogging')) {
+        updateFPS();
+    }
+
     const elapsedTime = clock.getElapsedTime(); // Get total time elapsed
     let sceneChanged = false;
 
@@ -164,9 +170,21 @@ function animate() {
     // Only render if something changed
     if (needsRender || sceneChanged) {
         if (renderer && scene && camera) {
+            const renderStart = performance.now();
             renderer.render(scene, camera);
+            const renderDuration = performance.now() - renderStart;
+
+            // Record render metrics if enabled
+            if (getConfig('enablePerformanceLogging')) {
+                recordRender(renderDuration, false);
+            }
         }
         needsRender = false;
+    } else {
+        // Record skipped render if enabled
+        if (getConfig('enablePerformanceLogging')) {
+            recordRender(0, true);
+        }
     }
 }
 

@@ -9,9 +9,12 @@ import { DEFAULT_PLOT_SIZE, CAMERA_STORAGE_KEY } from './constants.js';
 import * as THREE from 'three';
 import { addGroundBeamAndPanelVisuals } from './meshFactory.js'; // Import new function
 import toast from './toast.js'; // Import toast notifications
+import { startMonitoring } from './performanceMonitor.js'; // Import performance monitoring
 
 // --- Main Initialization ---
 async function main() {
+    // Start performance monitoring
+    startMonitoring();
     const container = document.getElementById('threejs-container');
     const layoutId = window.currentLayoutId;
 

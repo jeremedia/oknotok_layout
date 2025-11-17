@@ -26,6 +26,7 @@ export default [
                 requestAnimationFrame: 'readonly',
                 cancelAnimationFrame: 'readonly',
                 URL: 'readonly',
+                performance: 'readonly',
                 // Node.js globals (for config files)
                 process: 'readonly',
                 __dirname: 'readonly',

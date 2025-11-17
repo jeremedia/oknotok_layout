@@ -2,7 +2,8 @@
 import { UPRIGHT_HEIGHT, CROSSBEAM_LENGTH } from './constants.js';
 import { checkRateLimit } from './rateLimiter.js';
 import toast from './toast.js';
-import { apiLog } from './environment.js';
+import { apiLog, getConfig } from './environment.js';
+import { recordAPICall } from './performanceMonitor.js';
 
 // Helper for POST/PUT/PATCH/DELETE requests
 async function sendRequest(url = '', method = 'POST', data = {}) {
@@ -35,25 +36,60 @@ async function sendRequest(url = '', method = 'POST', data = {}) {
         config.body = JSON.stringify(data);
     }
 
-    const response = await fetch(url, config);
+    // Time the API call
+    const startTime = performance.now();
+    let success = true;
 
-    if (!response.ok) {
-        let errorData;
-        try {
-            errorData = await response.json();
-        } catch (_e) {
-            errorData = { error: response.statusText }; // Fallback if no JSON body
+    try {
+        const response = await fetch(url, config);
+
+        if (!response.ok) {
+            success = false;
+            let errorData;
+            try {
+                errorData = await response.json();
+            } catch (_e) {
+                errorData = { error: response.statusText }; // Fallback if no JSON body
+            }
+            console.error(`API Error Response (${response.status}):`, errorData);
+
+            // Record failed API call
+            const duration = performance.now() - startTime;
+            if (getConfig('enablePerformanceLogging')) {
+                recordAPICall(method.toUpperCase(), url, duration, false);
+            }
+
+            throw new Error(`API Error (${response.status}): ${JSON.stringify(errorData.errors || errorData.error || errorData)}`);
         }
-        console.error(`API Error Response (${response.status}):`, errorData);
-        throw new Error(`API Error (${response.status}): ${JSON.stringify(errorData.errors || errorData.error || errorData)}`);
-    }
 
-    // Handle 204 No Content response (for DELETE)
-    if (response.status === 204) {
-        return null; // Or return a success indicator if preferred
-    }
+        // Handle 204 No Content response (for DELETE)
+        const duration = performance.now() - startTime;
+        if (response.status === 204) {
+            // Record successful API call
+            if (getConfig('enablePerformanceLogging')) {
+                recordAPICall(method.toUpperCase(), url, duration, true);
+            }
+            return null; // Or return a success indicator if preferred
+        }
 
-    return response.json(); // Parses JSON response
+        const result = await response.json(); // Parses JSON response
+
+        // Record successful API call
+        if (getConfig('enablePerformanceLogging')) {
+            recordAPICall(method.toUpperCase(), url, duration, true);
+        }
+
+        return result;
+    } catch (error) {
+        // Record error if not already recorded
+        if (success) {
+            const duration = performance.now() - startTime;
+            if (getConfig('enablePerformanceLogging')) {
+                recordAPICall(method.toUpperCase(), url, duration, false);
+            }
+        }
+        throw error;
+    }
 }
 
 
@@ -75,14 +111,39 @@ async function fetchLayoutData(layoutId) {
         throw error;
     }
 
-    // Assuming GET request doesn't need CSRF token usually
-    const response = await fetch(url);
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    // Time the API call
+    const startTime = performance.now();
+    let success = true;
+
+    try {
+        // Assuming GET request doesn't need CSRF token usually
+        const response = await fetch(url);
+        if (!response.ok) {
+            success = false;
+            const duration = performance.now() - startTime;
+            if (getConfig('enablePerformanceLogging')) {
+                recordAPICall('GET', url, duration, false);
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        const duration = performance.now() - startTime;
+        if (getConfig('enablePerformanceLogging')) {
+            recordAPICall('GET', url, duration, true);
+        }
+
+        apiLog('Fetched Layout Data:', data);
+        return data;
+    } catch (error) {
+        if (success) {
+            const duration = performance.now() - startTime;
+            if (getConfig('enablePerformanceLogging')) {
+                recordAPICall('GET', url, duration, false);
+            }
+        }
+        throw error;
     }
-    const data = await response.json();
-    apiLog('Fetched Layout Data:', data);
-    return data;
 }
 
 async function placeUpright(layoutId, x, z) {
